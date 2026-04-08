@@ -438,4 +438,40 @@ export const PRODUCT_CATALOG: CatalogCategory[] = [
       },
     ],
   },
+  {
+    id: "cow-welfare",
+    name: "Cow welfare",
+    description:
+      "Happy, comfortable cows are productive cows. Our cow welfare solutions are designed to support natural behaviour, improve circulation and skin health, and create a calmer, more relaxed barn environment.",
+    products: [
+      {
+        id: "luna",
+        name: "Lely Luna",
+        description:
+          "Compact, fully electric cow brush that stimulates blood circulation, helps reduce flies and parasites, and exfoliates skin. Designed to offer optimum comfort for heifers and milking cows, encouraging them to brush themselves several times a day for better skin health and relaxation.",
+        usps: [
+          {
+            title: "Maximum cow comfort",
+            description:
+              "Brushing improves blood circulation, cleans dust and dirt from the skin, reduces itching and is relaxing for cows. They will happily use it several times a day.",
+          },
+          {
+            title: "Cow activity",
+            description:
+              "Luna encourages cows to move and keeps them relaxed and calm, potentially resulting in more peace in the barn and less destructive behaviour or competition.",
+          },
+          {
+            title: "Safe and easy",
+            description:
+              "Overload protection stops the brush if a cow pushes too hard, preventing painful or irritated skin. Easy to install as a standalone or wall-mounted unit.",
+          },
+          {
+            title: "Long lifespan",
+            description:
+              "Durable, interchangeable bristles and 100% electric operation with very low energy consumption. IP-rated for installation almost anywhere in the barn, with overrun safety protection built in.",
+          },
+        ],
+      },
+    ],
+  },
 ];
