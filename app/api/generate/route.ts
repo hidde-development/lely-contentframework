@@ -57,7 +57,7 @@ Lely is an international family business in the agricultural sector. Its mission
 ## E-E-A-T NOTE
 Every page should have author credentials, a publication date and a last-updated date. This is managed by the CMS — always include at least one rationale item reminding the user to ensure this is configured in the CMS (module: INTRO).
 
-## PAGE TEMPLATE (10 blocks, fixed order)
+## PAGE TEMPLATE (13 blocks, fixed order)
 
 **BLOCK 0 — SEO METADATA**
 Generate these two elements first, before any page content:
@@ -73,43 +73,59 @@ Generate these two elements first, before any page content:
 - type: "h2" — introduction section heading
 - type: "p" — introduction text, MAXIMUM 4 sentences. Must answer: what is this page about and why does it matter to the farmer?
 
-**BLOCK 3 — USP LIST BLOCK**
+**BLOCK 3 — KEY TAKEAWAYS** *(GEO priority block — critical for AI citation)*
+This block gives AI search engines a scannable summary to cite. It must be concrete, factual and independently useful.
+- type: "label" — "KEY TAKEAWAYS"
+- type: "h2" — e.g. "Key takeaways" or a more specific heading
+- type: "li" × 4–6 — each a concise, standalone factual statement. Include specific figures, percentages or definitions where possible. Each li must make sense on its own, out of context. Use authority signals where appropriate ("Research shows…", "According to…").
+
+**BLOCK 4 — USP LIST BLOCK**
 - type: "label" — suggested CMS label in ALL CAPS
 - type: "h2" — block heading (e.g. "Why robotic grazing works")
 - type: "usp" × exactly 4 — each with:
   - content = H3 heading, 1 or 2 words only
   - meta.description = 1 short supporting sentence
 
-**BLOCK 4 — BODY TEXT SECTION 1**
+**BLOCK 5 — BODY TEXT SECTION 1**
 - type: "label" — suggested CMS label in ALL CAPS
 - type: "h2" — section heading (incorporate a secondary keyword)
 - type: "p" × 1–3 — body paragraphs, KISS per paragraph (one idea each)
+- type: "table" (include when comparing options, listing specs, or presenting structured data) — content = pipe-separated rows, first line is column headers, subsequent lines are data rows. Example:
+  Robot model | Milking capacity | Suitable herd size
+  Astronaut A5 Next | Up to 70 cows | 60–180 cows
+  Astronaut Max | Up to 80 cows per robot | 100+ cows
 - type: "cta" — content = suggested button label (e.g. "Learn more about grazing management →"), meta.hint = destination type (e.g. "product page", "related article")
 
-**BLOCK 5 — BODY TEXT SECTION 2**
-Same structure as Block 4.
+**BLOCK 6 — BODY TEXT SECTION 2**
+Same structure as Block 5. Include a table if a different data comparison is relevant to this section.
 
-**BLOCK 6 — BODY TEXT SECTION 3**
-Same structure as Block 4.
+**BLOCK 7 — BODY TEXT SECTION 3**
+Same structure as Block 5. Include a table if useful for this section.
 
-**BLOCK 7 — RELATED TESTIMONIALS**
+**BLOCK 8 — RELATED TESTIMONIALS**
 - type: "placeholder" — content = "[PLACEHOLDER: Add 2–3 relevant customer testimonials here. Select farmers who can speak to [topic]. Find testimonials in CMS → Testimonials.]"
 
-**BLOCK 8 — NATURAL CTA**
+**BLOCK 9 — NATURAL CTA**
 This is NOT a banner or a hard sell. It is a natural, editorial section that concludes the article by organically introducing the relevant Lely product(s).
 - type: "h2" — editorial heading that flows naturally from the article (e.g. "Tools to support your grazing management")
 - type: "p" × 1–2 — copy that naturally introduces the product(s) from the input, explaining how they help. Mention product names in bold (**Product Name**). Do not be promotional — be informative and supportive.
 
-**BLOCK 9 — FAQ**
+**BLOCK 10 — FAQ**
 - type: "faq_q" × exactly 5 — questions based on search intent and the provided questions
 - type: "faq_a" × exactly 5 — paired answers, minimum 2 sentences each, direct and factual
 
-**BLOCK 10 — RELATED BLOGS**
+**BLOCK 11 — SOURCES** *(GEO priority block — E-E-A-T authority signals)*
+Cited sources strengthen E-E-A-T for human readers and give AI engines verifiable references to anchor citations.
+- type: "label" — "SOURCES"
+- type: "h2" — "Sources and further reading"
+- type: "source" × 3–5 — each a full citation. Format: Author/organisation (year). *Title*. Publication or URL. Include a mix of: academic research, industry reports, Lely whitepapers, or authoritative sector organisations (e.g. Wageningen University, FAO, DairyCo). Only cite sources that plausibly exist and are relevant to the topic.
+
+**BLOCK 12 — RELATED BLOGS**
 - type: "related_blog" × exactly 2 — suggested blog articles that deepen the topic:
   - content = proposed blog title
   - meta.description = one-sentence summary of what the blog covers
 
-**BLOCK 11 — RELATED PRODUCTS**
+**BLOCK 13 — RELATED PRODUCTS**
 - type: "placeholder" — content = "[PLACEHOLDER: Add related product cards here. Suggested products: [list the products from the Natural CTA section]. Find products in CMS → Products.]"
 
 ## RATIONALE RULES
@@ -119,6 +135,7 @@ Include 20–35 rationale items. Every text element must have at least one ratio
 In addition to SEO and GEO rationale, include:
 - **tov** items: flag specific phrases, headings or structural choices that demonstrate one of the four Lely Tone of Voice elements (Bright / Optimistic / Creative / Supportive). Name which ToV element applies.
 - **brand** items: flag where Lely products, brand values or pay-offs are mentioned authentically and in line with the brand identity guidelines.
+- At least 3 **geo** or **both** rationale items, specifically explaining how the Key Takeaways, tables and Sources blocks serve AI search engines.
 
 ## OUTPUT FORMAT
 
@@ -147,6 +164,12 @@ Respond ONLY with valid JSON, no markdown code blocks. Use this exact format:
     },
     {
       "id": "t12",
+      "type": "table",
+      "content": "Robot model | Milking capacity | Suitable herd size\nAstronaut A5 Next | Up to 70 cows | 60–180 cows\nAstronaut Max | Up to 80 cows per robot | 100+ cows",
+      "rationaleIds": ["r13"]
+    },
+    {
+      "id": "t14",
       "type": "cta",
       "content": "Discover grazing management tools →",
       "meta": { "hint": "Link to Grazeway product page" },
@@ -159,11 +182,17 @@ Respond ONLY with valid JSON, no markdown code blocks. Use this exact format:
       "rationaleIds": ["r20"]
     },
     {
-      "id": "t22",
+      "id": "t24",
+      "type": "source",
+      "content": "Wageningen University & Research (2022). Grazing behaviour and robotic milking: a systematic review. Wageningen Academic Publishers.",
+      "rationaleIds": ["r24"]
+    },
+    {
+      "id": "t26",
       "type": "related_blog",
       "content": "Factors that influence grazing and robot milking",
       "meta": { "description": "An in-depth look at how herd size, available grazing area and robot capacity affect your grazing system." },
-      "rationaleIds": ["r25"]
+      "rationaleIds": ["r26"]
     }
   ],
   "rationale": [
@@ -187,11 +216,18 @@ Respond ONLY with valid JSON, no markdown code blocks. Use this exact format:
       "module": "CTA",
       "element": "Natural CTA paragraph",
       "explanation": "Lely Grazeway is introduced as a practical solution rather than a promotional claim, consistent with the Bright and Supportive brand voice."
+    },
+    {
+      "id": "r13",
+      "type": "geo",
+      "module": "BODY",
+      "element": "Comparison table",
+      "explanation": "Structured tabular data allows AI engines to extract and compare specifications directly, increasing the likelihood of citation in AI-generated answers about milking robot capacity."
     }
   ]
 }
 
-Valid text element types: meta_title, meta_desc, h1, h2, h3, p, li, label, usp, cta, placeholder, related_blog, faq_q, faq_a
+Valid text element types: meta_title, meta_desc, h1, h2, h3, p, li, label, usp, cta, placeholder, related_blog, faq_q, faq_a, table, source
 Valid rationale types: seo, geo, both, tov, brand
 Valid modules: META, HERO, INTRO, USP, BODY, TESTIMONIAL, CTA, FAQ, BLOGS, PRODUCTS`;
 
@@ -205,6 +241,7 @@ Rationale types:
 - brand: authentic use of Lely brand identity, products, or pay-offs
 
 Template modules: META, HERO, INTRO, USP, BODY, TESTIMONIAL, CTA, FAQ, BLOGS, PRODUCTS
+Text element types include: meta_title, meta_desc, h1, h2, h3, p, li, label, usp, cta, placeholder, related_blog, faq_q, faq_a, table, source
 
 Rules:
 - Generate 15–25 rationale items total
@@ -278,7 +315,7 @@ Questions to answer: ${input.questions || "None"}`;
 
   try {
     // ── Call 1: blocks 0–5 (META, HERO, INTRO, USP, BODY 1, BODY 2) ────────
-    const prompt1 = `Generate blocks 0–5 of the Lely CMS page template as a JSON object with a "text" array.
+    const prompt1 = `Generate blocks 0–7 of the Lely CMS page template as a JSON object with a "text" array.
 
 ${sharedContext}
 
@@ -286,24 +323,26 @@ Generate ONLY these blocks in order:
 - Block 0: SEO METADATA (meta_title + meta_desc)
 - Block 1: HERO (label + h1)
 - Block 2: INTRODUCTION (label + h2 + max 4 sentences of p)
-- Block 3: USP LIST BLOCK (label + h2 + exactly 4 usp elements)
-- Block 4: BODY TEXT SECTION 1 (label + h2 + 1–2 paragraphs + cta)
-- Block 5: BODY TEXT SECTION 2 (label + h2 + 1–2 paragraphs + cta)
+- Block 3: KEY TAKEAWAYS (label + h2 + 4–6 li items — factual, standalone statements ideal for AI citation)
+- Block 4: USP LIST BLOCK (label + h2 + exactly 4 usp elements)
+- Block 5: BODY TEXT SECTION 1 (label + h2 + 1–2 paragraphs + optional table + cta)
+- Block 6: BODY TEXT SECTION 2 (label + h2 + 1–2 paragraphs + optional table + cta)
+- Block 7: BODY TEXT SECTION 3 (label + h2 + 1–2 paragraphs + optional table + cta)
 
-Keep each paragraph to 2–3 sentences. ${rationaleIdNote}`;
+Keep each paragraph to 2–3 sentences. Include a table in at least one body section where data comparison or structured info adds value. ${rationaleIdNote}`;
 
-    // ── Call 2: blocks 6–10 (BODY 3, TESTIMONIAL, CTA, FAQ, BLOGS, PRODUCTS)
-    const prompt2 = `Generate blocks 6–10 of the Lely CMS page template as a JSON object with a "text" array. Continue rationaleIds sequentially from r20 onwards.
+    // ── Call 2: blocks 8–13 (TESTIMONIAL, CTA, FAQ, SOURCES, BLOGS, PRODUCTS)
+    const prompt2 = `Generate blocks 8–13 of the Lely CMS page template as a JSON object with a "text" array. Continue rationaleIds sequentially from r25 onwards.
 
 ${sharedContext}
 
 Generate ONLY these blocks in order:
-- Block 6: BODY TEXT SECTION 3 (label + h2 + 1–2 paragraphs + cta)
-- Block 7: RELATED TESTIMONIALS (placeholder element)
-- Block 8: NATURAL CTA (h2 + 1–2 paragraphs naturally introducing the products)
-- Block 9: FAQ (exactly 5 faq_q + faq_a pairs, answers max 2 sentences each)
-- Block 10: RELATED BLOGS (exactly 2 related_blog elements)
-- Block 11: RELATED PRODUCTS (placeholder element)
+- Block 8: RELATED TESTIMONIALS (placeholder element)
+- Block 9: NATURAL CTA (h2 + 1–2 paragraphs naturally introducing the products)
+- Block 10: FAQ (exactly 5 faq_q + faq_a pairs, answers minimum 2 sentences each, direct and factual)
+- Block 11: SOURCES (label + h2 + 3–5 source elements — plausible, relevant academic/industry citations)
+- Block 12: RELATED BLOGS (exactly 2 related_blog elements)
+- Block 13: RELATED PRODUCTS (placeholder element)
 
 Keep answers and paragraphs concise. ${rationaleIdNote}`;
 

@@ -93,6 +93,19 @@ function elementsToHtml(elements: TextElement[]): string {
           `<p style="font-family:Arial,sans-serif;border:1px solid #f59e0b;background:#fffbeb;padding:8px 12px"><strong>⚠ ${esc(el.content)}</strong></p>`,
         );
         break;
+      case "table": {
+        const { headers, rows } = parseTable(el.content);
+        const thCells = headers.map((h) => `<th style="padding:6px 12px;border:1px solid #d1d5db;background:#f9fafb;font-weight:600;text-align:left;font-family:Arial,sans-serif;font-size:13px">${esc(h)}</th>`).join("");
+        const trRows = rows.map((row) => {
+          const tds = row.map((cell) => `<td style="padding:6px 12px;border:1px solid #d1d5db;font-family:Arial,sans-serif;font-size:13px">${inlineHtml(cell)}</td>`).join("");
+          return `<tr>${tds}</tr>`;
+        }).join("");
+        parts.push(`<table style="border-collapse:collapse;width:100%;margin:12px 0"><thead><tr>${thCells}</tr></thead><tbody>${trRows}</tbody></table>`);
+        break;
+      }
+      case "source":
+        parts.push(`<p style="font-family:Arial,sans-serif;font-size:12px;color:#4b5563">${inlineHtml(el.content)}</p>`);
+        break;
       case "related_blog":
         parts.push(
           `<p style="font-family:Arial,sans-serif"><strong>${esc(el.content)}</strong>${el.meta?.description ? `: ${esc(el.meta.description)}` : ""}</p>`,
@@ -149,6 +162,17 @@ function elementsToPlainText(elements: TextElement[]): string {
         break;
       case "placeholder":
         lines.push(`[${text}]`, "");
+        break;
+      case "table": {
+        const { headers, rows } = parseTable(el.content);
+        lines.push(headers.join(" | "));
+        lines.push(headers.map(() => "---").join(" | "));
+        rows.forEach((row) => lines.push(row.join(" | ")));
+        lines.push("");
+        break;
+      }
+      case "source":
+        lines.push(`• ${text}`, "");
         break;
       case "related_blog":
         lines.push(`${text}${el.meta?.description ? `: ${el.meta.description}` : ""}`, "");
@@ -286,6 +310,63 @@ function PlaceholderBlock({ el, activeId, onHover }: { el: TextElement; activeId
   );
 }
 
+function parseTable(content: string): { headers: string[]; rows: string[][] } {
+  const lines = content.split("\n").map((l) => l.trim()).filter((l) => l.length > 0);
+  const [headerLine, ...rowLines] = lines;
+  const headers = (headerLine ?? "").split("|").map((h) => h.trim());
+  const rows = rowLines.map((line) => line.split("|").map((cell) => cell.trim()));
+  return { headers, rows };
+}
+
+function DataTable({ el, activeId, onHover }: { el: TextElement; activeId: string | null; onHover: (ids: string[] | null) => void }) {
+  const { headers, rows } = parseTable(el.content);
+  return (
+    <div onMouseEnter={() => onHover(el.rationaleIds)} onMouseLeave={() => onHover(null)}
+      className={`my-5 overflow-x-auto rounded-xl border border-gray-200 cursor-default transition-all ${isHighlighted(el.rationaleIds, activeId) ? "ring-1 ring-yellow-300 bg-yellow-50" : ""}`}>
+      <table className="w-full text-sm border-collapse">
+        <thead>
+          <tr className="bg-gray-50 border-b border-gray-200">
+            {headers.map((h, i) => (
+              <th key={i} className="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {rows.map((row, ri) => (
+            <tr key={ri} className="hover:bg-gray-50 transition-colors">
+              {row.map((cell, ci) => (
+                <td key={ci} className="px-4 py-2.5 text-gray-700 leading-relaxed" dangerouslySetInnerHTML={{ __html: inlineHtml(cell) }} />
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function SourcesSection({ items, activeId, onHover }: { items: TextElement[]; activeId: string | null; onHover: (ids: string[] | null) => void }) {
+  return (
+    <div className="my-8 rounded-xl border border-gray-200 overflow-hidden">
+      <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
+        <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Sources and further reading</span>
+      </div>
+      <ol className="divide-y divide-gray-100">
+        {items.map((el, idx) => (
+          <li key={el.id} onMouseEnter={() => onHover(el.rationaleIds)} onMouseLeave={() => onHover(null)}
+            className={`flex gap-3 px-4 py-3 cursor-default transition-all ${hoverCls(el.rationaleIds, activeId)}`}>
+            <span className="text-xs font-bold text-gray-400 tabular-nums mt-0.5 shrink-0">{idx + 1}.</span>
+            <p className="text-xs text-gray-600 leading-relaxed" dangerouslySetInnerHTML={{ __html: inlineHtml(el.content) }} />
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
 function RelatedBlogsSection({ items, activeId, onHover }: { items: TextElement[]; activeId: string | null; onHover: (ids: string[] | null) => void }) {
   return (
     <div className="my-6">
@@ -372,6 +453,7 @@ export default function TextPanel({ elements, activeRationaleId, onElementHover 
   const faq_qs = elements.filter((e) => e.type === "faq_q");
   const faq_as = elements.filter((e) => e.type === "faq_a");
   const blogItems = elements.filter((e) => e.type === "related_blog");
+  const sourceItems = elements.filter((e) => e.type === "source");
   const faqPairs = faq_qs.map((q, i) => ({ q, a: faq_as[i] })).filter((p) => p.a);
 
   // Group li into ul
@@ -380,11 +462,12 @@ export default function TextPanel({ elements, activeRationaleId, onElementHover 
     | { type: "ul"; items: TextElement[] }
     | { type: "_usp_block"; items: TextElement[] }
     | { type: "_faq_block"; pairs: Array<{ q: TextElement; a: TextElement }> }
-    | { type: "_blogs_block"; items: TextElement[] };
+    | { type: "_blogs_block"; items: TextElement[] }
+    | { type: "_sources_block"; items: TextElement[] };
 
   const grouped: Grouped[] = [];
   let currentList: TextElement[] | null = null;
-  let uspAdded = false, faqAdded = false, blogsAdded = false;
+  let uspAdded = false, faqAdded = false, blogsAdded = false, sourcesAdded = false;
 
   for (const el of elements) {
     if (el.type === "faq_a") continue;
@@ -404,6 +487,11 @@ export default function TextPanel({ elements, activeRationaleId, onElementHover 
     if (el.type === "related_blog") {
       currentList = null;
       if (!blogsAdded) { grouped.push({ type: "_blogs_block", items: blogItems }); blogsAdded = true; }
+      continue;
+    }
+    if (el.type === "source") {
+      currentList = null;
+      if (!sourcesAdded) { grouped.push({ type: "_sources_block", items: sourceItems }); sourcesAdded = true; }
       continue;
     }
     if (el.type === "li") {
@@ -445,6 +533,8 @@ export default function TextPanel({ elements, activeRationaleId, onElementHover 
               return <FAQSection key={idx} pairs={item.pairs} activeId={activeRationaleId} onHover={onElementHover} />;
             if ("type" in item && item.type === "_blogs_block")
               return <RelatedBlogsSection key={idx} items={item.items} activeId={activeRationaleId} onHover={onElementHover} />;
+            if ("type" in item && item.type === "_sources_block")
+              return <SourcesSection key={idx} items={item.items} activeId={activeRationaleId} onHover={onElementHover} />;
 
             // Li list
             if ("type" in item && item.type === "ul") {
@@ -468,6 +558,8 @@ export default function TextPanel({ elements, activeRationaleId, onElementHover 
               return <CTAButton key={el.id} el={el} activeId={activeRationaleId} onHover={onElementHover} />;
             if (el.type === "placeholder")
               return <PlaceholderBlock key={el.id} el={el} activeId={activeRationaleId} onHover={onElementHover} />;
+            if (el.type === "table")
+              return <DataTable key={el.id} el={el} activeId={activeRationaleId} onHover={onElementHover} />;
 
             if (el.type === "h1" || el.type === "h2" || el.type === "h3") {
               const Tag = el.type as "h1" | "h2" | "h3";

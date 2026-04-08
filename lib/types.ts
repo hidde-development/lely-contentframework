@@ -8,7 +8,9 @@ export type TextElementType =
   | "cta"           // CTA button suggestion: content = button label, meta.hint = destination hint
   | "placeholder"   // Content Claude cannot generate (testimonials, specific links) — user fills in
   | "related_blog"  // Blog suggestion: content = proposed title, meta.description = one-line summary
-  | "faq_q" | "faq_a";
+  | "faq_q" | "faq_a"
+  | "table"         // Data/comparison table. content = pipe-separated rows: first line = headers, rest = data rows
+  | "source";       // Cited source for E-E-A-T / GEO authority. content = full citation string
 
 /** SEO/GEO visibility type */
 export type RationaleType = "seo" | "geo" | "both" | "tov" | "brand";
