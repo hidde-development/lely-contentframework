@@ -43,10 +43,17 @@ export interface GeneratedContent {
   rationale: RationaleItem[];
 }
 
+export interface KeywordEntry {
+  keyword: string;
+  volume: number | null;
+  isPrimary: boolean;
+}
+
 export interface GenerateInput {
   topic: string;
   mainKeyword: string;
   subKeywords: string;
+  keywords: KeywordEntry[];
   instructions: string;
   questions: string;
 }

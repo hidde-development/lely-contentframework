@@ -169,11 +169,26 @@ Zorg voor minimaal 18 en maximaal 35 rationale-items. Elk tekstelement heeft min
 export async function POST(request: NextRequest) {
   const input: GenerateInput = await request.json();
 
+  // Build keyword context string with volumes for richer Claude context
+  const keywordContext = input.keywords && input.keywords.length > 0
+    ? input.keywords
+        .map((k) => {
+          const vol = k.volume !== null ? ` (${k.volume.toLocaleString("en-GB")} searches/mo)` : "";
+          const tag = k.isPrimary ? " ← PRIMARY" : "";
+          return `- ${k.keyword}${vol}${tag}`;
+        })
+        .join("\n")
+    : `- ${input.mainKeyword} ← PRIMARY\n${input.subKeywords ? input.subKeywords.split(",").map((k) => `- ${k.trim()}`).join("\n") : ""}`;
+
   const userPrompt = `Schrijf een SEO- en GEO-geoptimaliseerde tekst op basis van de template-modules A t/m H:
 
 **Onderwerp:** ${input.topic}
-**Hoofdzoekwoord:** ${input.mainKeyword}
-**Subzoekwoorden:** ${input.subKeywords || "Geen opgegeven"}
+
+**Zoekwoorden (inclusief maandelijkse zoekvolumes):**
+${keywordContext}
+
+Gebruik het primaire zoekwoord als hoofdzoekwoord in H1, intro en verspreid door de tekst. Verwerk de overige zoekwoorden op basis van hun zoekvolume: hogere volumes verdienen meer prominente plaatsing (H2/H3), lagere volumes kunnen verwerkt worden in bodytekst of FAQ.
+
 **Extra instructies:** ${input.instructions || "Geen"}
 **Te beantwoorden vragen (verwerk in FAQ en/of lopende tekst):** ${input.questions || "Geen specifieke vragen"}
 
