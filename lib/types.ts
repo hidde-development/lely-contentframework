@@ -12,19 +12,18 @@ export type TextElementType =
   | "table"         // Data/comparison table. content = pipe-separated rows: first line = headers, rest = data rows
   | "source";       // Cited source for E-E-A-T / GEO authority. content = full citation string
 
-/** SEO/GEO visibility type */
-export type RationaleType = "seo" | "geo" | "both" | "tov" | "brand" | "strategy";
-
 /** Lely page template blocks */
 export type TemplateModule =
   | "META"
   | "HERO"
   | "INTRO"
+  | "TAKEAWAYS"
   | "USP"
   | "BODY"
   | "TESTIMONIAL"
   | "CTA"
   | "FAQ"
+  | "SOURCES"
   | "BLOGS"
   | "PRODUCTS";
 
@@ -37,24 +36,39 @@ export interface TextElement {
   id: string;
   type: TextElementType;
   content: string;
-  rationaleIds: string[];
   /** For "usp": meta.description = supporting sentence.
    *  For "cta": meta.hint = destination hint.
    *  For "related_blog": meta.description = one-line summary. */
   meta?: Record<string, string>;
 }
 
-export interface RationaleItem {
+// ── Quality report (replaces rationale) ───────────────────────────────────────
+
+export type QualityCategory = "seo" | "geo" | "brand" | "strategy";
+
+export interface ActionItem {
   id: string;
-  type: RationaleType;
-  module: TemplateModule;
-  element: string;
-  explanation: string;
+  category: QualityCategory;
+  /** high = blocks quality, medium = reduces effectiveness, low = minor improvement */
+  severity: "high" | "medium" | "low";
+  /** Criterion code, e.g. "G1", "B2" */
+  criterion: string;
+  /** ID of the most relevant text element, if applicable */
+  elementId?: string;
+  /** What is wrong or missing */
+  issue: string;
+  /** Specific instruction for the human editor to fix it */
+  fix: string;
+}
+
+export interface QualityReport {
+  scores: Record<QualityCategory, number>; // 0–100
+  actions: ActionItem[];
 }
 
 export interface GeneratedContent {
   text: TextElement[];
-  rationale: RationaleItem[];
+  quality: QualityReport;
 }
 
 export interface KeywordEntry {

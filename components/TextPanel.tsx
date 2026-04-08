@@ -190,16 +190,16 @@ function elementsToPlainText(elements: TextElement[]): string {
 
 interface TextPanelProps {
   elements: TextElement[];
-  activeRationaleId: string | null;
-  onElementHover: (rationaleIds: string[] | null) => void;
+  activeElementId: string | null;
+  onElementHover: (elementId: string | null) => void;
 }
 
-function isHighlighted(rationaleIds: string[], activeId: string | null) {
-  return activeId !== null && rationaleIds.includes(activeId);
+function isHighlighted(elementId: string, activeId: string | null) {
+  return activeId !== null && elementId === activeId;
 }
 
-function hoverCls(rationaleIds: string[], activeId: string | null) {
-  return isHighlighted(rationaleIds, activeId)
+function hoverCls(elementId: string, activeId: string | null) {
+  return isHighlighted(elementId, activeId)
     ? "bg-yellow-100 ring-1 ring-yellow-300"
     : "hover:bg-gray-50";
 }
@@ -232,8 +232,8 @@ function MetaBlock({ elements, activeId, onHover }: { elements: TextElement[]; a
       </div>
       <div className="divide-y divide-gray-100">
         {titleEl && (
-          <div onMouseEnter={() => onHover(titleEl.rationaleIds)} onMouseLeave={() => onHover(null)}
-            className={`px-4 py-3 cursor-default transition-all ${hoverCls(titleEl.rationaleIds, activeId)}`}>
+          <div onMouseEnter={() => onHover(titleEl.id)} onMouseLeave={() => onHover(null)}
+            className={`px-4 py-3 cursor-default transition-all ${hoverCls(titleEl.id, activeId)}`}>
             <div className="flex items-center justify-between mb-1">
               <span className="text-xs font-medium text-gray-400">Meta title</span>
               <span className={`text-xs tabular-nums ${charColor(titleEl.content.length, 65)}`}>
@@ -244,8 +244,8 @@ function MetaBlock({ elements, activeId, onHover }: { elements: TextElement[]; a
           </div>
         )}
         {descEl && (
-          <div onMouseEnter={() => onHover(descEl.rationaleIds)} onMouseLeave={() => onHover(null)}
-            className={`px-4 py-3 cursor-default transition-all ${hoverCls(descEl.rationaleIds, activeId)}`}>
+          <div onMouseEnter={() => onHover(descEl.id)} onMouseLeave={() => onHover(null)}
+            className={`px-4 py-3 cursor-default transition-all ${hoverCls(descEl.id, activeId)}`}>
             <div className="flex items-center justify-between mb-1">
               <span className="text-xs font-medium text-gray-400">Meta description</span>
               <span className={`text-xs tabular-nums ${charColor(descEl.content.length, 155)}`}>
@@ -260,22 +260,22 @@ function MetaBlock({ elements, activeId, onHover }: { elements: TextElement[]; a
   );
 }
 
-function CmsLabel({ el, activeId, onHover }: { el: TextElement; activeId: string | null; onHover: (ids: string[] | null) => void }) {
+function CmsLabel({ el, activeId, onHover }: { el: TextElement; activeId: string | null; onHover: (id: string | null) => void }) {
   return (
-    <div onMouseEnter={() => onHover(el.rationaleIds)} onMouseLeave={() => onHover(null)}
-      className={`inline-flex items-center gap-1.5 mb-2 cursor-default transition-all rounded px-1 -mx-1 ${hoverCls(el.rationaleIds, activeId)}`}>
+    <div onMouseEnter={() => onHover(el.id)} onMouseLeave={() => onHover(null)}
+      className={`inline-flex items-center gap-1.5 mb-2 cursor-default transition-all rounded px-1 -mx-1 ${hoverCls(el.id, activeId)}`}>
       <span className="text-xs font-bold tracking-widest text-gray-400 uppercase">{el.content}</span>
       <span className="text-xs bg-amber-100 text-amber-700 border border-amber-200 rounded px-1.5 py-0.5 font-medium">CMS label</span>
     </div>
   );
 }
 
-function USPBlock({ items, activeId, onHover }: { items: TextElement[]; activeId: string | null; onHover: (ids: string[] | null) => void }) {
+function USPBlock({ items, activeId, onHover }: { items: TextElement[]; activeId: string | null; onHover: (id: string | null) => void }) {
   return (
     <div className="my-6 grid grid-cols-2 gap-3">
       {items.map((el) => (
-        <div key={el.id} onMouseEnter={() => onHover(el.rationaleIds)} onMouseLeave={() => onHover(null)}
-          className={`rounded-xl border border-gray-200 p-4 cursor-default transition-all ${hoverCls(el.rationaleIds, activeId)}`}>
+        <div key={el.id} onMouseEnter={() => onHover(el.id)} onMouseLeave={() => onHover(null)}
+          className={`rounded-xl border border-gray-200 p-4 cursor-default transition-all ${hoverCls(el.id, activeId)}`}>
           <h3 className="text-sm font-bold text-gray-900 mb-1">{el.content}</h3>
           {el.meta?.description && <p className="text-xs text-gray-500 leading-relaxed">{el.meta.description}</p>}
         </div>
@@ -284,10 +284,10 @@ function USPBlock({ items, activeId, onHover }: { items: TextElement[]; activeId
   );
 }
 
-function CTAButton({ el, activeId, onHover }: { el: TextElement; activeId: string | null; onHover: (ids: string[] | null) => void }) {
+function CTAButton({ el, activeId, onHover }: { el: TextElement; activeId: string | null; onHover: (id: string | null) => void }) {
   return (
-    <div onMouseEnter={() => onHover(el.rationaleIds)} onMouseLeave={() => onHover(null)}
-      className={`my-3 flex items-center gap-3 cursor-default transition-all rounded-lg px-1 -mx-1 ${hoverCls(el.rationaleIds, activeId)}`}>
+    <div onMouseEnter={() => onHover(el.id)} onMouseLeave={() => onHover(null)}
+      className={`my-3 flex items-center gap-3 cursor-default transition-all rounded-lg px-1 -mx-1 ${hoverCls(el.id, activeId)}`}>
       <span className="inline-flex items-center gap-2 bg-gray-900 text-white text-xs font-medium px-4 py-2 rounded-lg">
         {el.content}
       </span>
@@ -296,10 +296,10 @@ function CTAButton({ el, activeId, onHover }: { el: TextElement; activeId: strin
   );
 }
 
-function PlaceholderBlock({ el, activeId, onHover }: { el: TextElement; activeId: string | null; onHover: (ids: string[] | null) => void }) {
+function PlaceholderBlock({ el, activeId, onHover }: { el: TextElement; activeId: string | null; onHover: (id: string | null) => void }) {
   return (
-    <div onMouseEnter={() => onHover(el.rationaleIds)} onMouseLeave={() => onHover(null)}
-      className={`my-4 rounded-xl border-2 border-dashed border-amber-300 bg-amber-50 px-5 py-4 cursor-default transition-all ${isHighlighted(el.rationaleIds, activeId) ? "ring-1 ring-yellow-300" : ""}`}>
+    <div onMouseEnter={() => onHover(el.id)} onMouseLeave={() => onHover(null)}
+      className={`my-4 rounded-xl border-2 border-dashed border-amber-300 bg-amber-50 px-5 py-4 cursor-default transition-all ${isHighlighted(el.id, activeId) ? "ring-1 ring-yellow-300" : ""}`}>
       <div className="flex items-start gap-2.5">
         <svg className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -318,11 +318,11 @@ function parseTable(content: string): { headers: string[]; rows: string[][] } {
   return { headers, rows };
 }
 
-function DataTable({ el, activeId, onHover }: { el: TextElement; activeId: string | null; onHover: (ids: string[] | null) => void }) {
+function DataTable({ el, activeId, onHover }: { el: TextElement; activeId: string | null; onHover: (id: string | null) => void }) {
   const { headers, rows } = parseTable(el.content);
   return (
-    <div onMouseEnter={() => onHover(el.rationaleIds)} onMouseLeave={() => onHover(null)}
-      className={`my-5 overflow-x-auto rounded-xl border border-gray-200 cursor-default transition-all ${isHighlighted(el.rationaleIds, activeId) ? "ring-1 ring-yellow-300 bg-yellow-50" : ""}`}>
+    <div onMouseEnter={() => onHover(el.id)} onMouseLeave={() => onHover(null)}
+      className={`my-5 overflow-x-auto rounded-xl border border-gray-200 cursor-default transition-all ${isHighlighted(el.id, activeId) ? "ring-1 ring-yellow-300 bg-yellow-50" : ""}`}>
       <table className="w-full text-sm border-collapse">
         <thead>
           <tr className="bg-gray-50 border-b border-gray-200">
@@ -345,7 +345,7 @@ function DataTable({ el, activeId, onHover }: { el: TextElement; activeId: strin
   );
 }
 
-function SourcesSection({ items, activeId, onHover }: { items: TextElement[]; activeId: string | null; onHover: (ids: string[] | null) => void }) {
+function SourcesSection({ items, activeId, onHover }: { items: TextElement[]; activeId: string | null; onHover: (id: string | null) => void }) {
   return (
     <div className="my-8 rounded-xl border border-gray-200 overflow-hidden">
       <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
@@ -356,8 +356,8 @@ function SourcesSection({ items, activeId, onHover }: { items: TextElement[]; ac
       </div>
       <ol className="divide-y divide-gray-100">
         {items.map((el, idx) => (
-          <li key={el.id} onMouseEnter={() => onHover(el.rationaleIds)} onMouseLeave={() => onHover(null)}
-            className={`flex gap-3 px-4 py-3 cursor-default transition-all ${hoverCls(el.rationaleIds, activeId)}`}>
+          <li key={el.id} onMouseEnter={() => onHover(el.id)} onMouseLeave={() => onHover(null)}
+            className={`flex gap-3 px-4 py-3 cursor-default transition-all ${hoverCls(el.id, activeId)}`}>
             <span className="text-xs font-bold text-gray-400 tabular-nums mt-0.5 shrink-0">{idx + 1}.</span>
             <p className="text-xs text-gray-600 leading-relaxed" dangerouslySetInnerHTML={{ __html: inlineHtml(el.content) }} />
           </li>
@@ -367,14 +367,14 @@ function SourcesSection({ items, activeId, onHover }: { items: TextElement[]; ac
   );
 }
 
-function RelatedBlogsSection({ items, activeId, onHover }: { items: TextElement[]; activeId: string | null; onHover: (ids: string[] | null) => void }) {
+function RelatedBlogsSection({ items, activeId, onHover }: { items: TextElement[]; activeId: string | null; onHover: (id: string | null) => void }) {
   return (
     <div className="my-6">
       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Related blogs</p>
       <div className="space-y-2">
         {items.map((el) => (
-          <div key={el.id} onMouseEnter={() => onHover(el.rationaleIds)} onMouseLeave={() => onHover(null)}
-            className={`rounded-xl border border-gray-200 p-4 cursor-default transition-all ${hoverCls(el.rationaleIds, activeId)}`}>
+          <div key={el.id} onMouseEnter={() => onHover(el.id)} onMouseLeave={() => onHover(null)}
+            className={`rounded-xl border border-gray-200 p-4 cursor-default transition-all ${hoverCls(el.id, activeId)}`}>
             <p className="text-sm font-semibold text-gray-800 mb-1">{el.content}</p>
             {el.meta?.description && <p className="text-xs text-gray-500 leading-relaxed">{el.meta.description}</p>}
             <span className="mt-2 inline-flex items-center gap-1 text-xs bg-amber-100 text-amber-700 border border-amber-200 rounded px-1.5 py-0.5 font-medium">
@@ -387,19 +387,19 @@ function RelatedBlogsSection({ items, activeId, onHover }: { items: TextElement[
   );
 }
 
-function FAQSection({ pairs, activeId, onHover }: { pairs: Array<{ q: TextElement; a: TextElement }>; activeId: string | null; onHover: (ids: string[] | null) => void }) {
+function FAQSection({ pairs, activeId, onHover }: { pairs: Array<{ q: TextElement; a: TextElement }>; activeId: string | null; onHover: (id: string | null) => void }) {
   return (
     <div className="my-8">
       <h2 className="text-xl font-semibold text-gray-800 mb-4 pb-1 border-b border-gray-200">Frequently Asked Questions</h2>
       <div className="space-y-4">
         {pairs.map(({ q, a }, idx) => (
           <div key={idx} className="rounded-xl border border-gray-200 overflow-hidden">
-            <div onMouseEnter={() => onHover(q.rationaleIds)} onMouseLeave={() => onHover(null)}
-              className={`px-4 py-3 bg-gray-50 cursor-default transition-all ${hoverCls(q.rationaleIds, activeId)}`}>
+            <div onMouseEnter={() => onHover(q.id)} onMouseLeave={() => onHover(null)}
+              className={`px-4 py-3 bg-gray-50 cursor-default transition-all ${hoverCls(q.id, activeId)}`}>
               <p className="text-sm font-semibold text-gray-800">{q.content}</p>
             </div>
-            <div onMouseEnter={() => onHover(a.rationaleIds)} onMouseLeave={() => onHover(null)}
-              className={`px-4 py-3 bg-white cursor-default transition-all ${hoverCls(a.rationaleIds, activeId)}`}>
+            <div onMouseEnter={() => onHover(a.id)} onMouseLeave={() => onHover(null)}
+              className={`px-4 py-3 bg-white cursor-default transition-all ${hoverCls(a.id, activeId)}`}>
               <p className="text-sm text-gray-700 leading-relaxed" dangerouslySetInnerHTML={{ __html: bold(a.content) }} />
             </div>
           </div>
@@ -411,7 +411,7 @@ function FAQSection({ pairs, activeId, onHover }: { pairs: Array<{ q: TextElemen
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function TextPanel({ elements, activeRationaleId, onElementHover }: TextPanelProps) {
+export default function TextPanel({ elements, activeElementId, onElementHover }: TextPanelProps) {
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
@@ -524,25 +524,25 @@ export default function TextPanel({ elements, activeRationaleId, onElementHover 
       {/* Content */}
       <div className="flex-1 overflow-y-auto px-8 py-6">
         <div className="max-w-2xl mx-auto">
-          <MetaBlock elements={metaElements} activeId={activeRationaleId} onHover={onElementHover} />
+          <MetaBlock elements={metaElements} activeId={activeElementId} onHover={onElementHover} />
           {grouped.map((item, idx) => {
             // Grouped blocks
             if ("type" in item && item.type === "_usp_block")
-              return <USPBlock key={idx} items={item.items} activeId={activeRationaleId} onHover={onElementHover} />;
+              return <USPBlock key={idx} items={item.items} activeId={activeElementId} onHover={onElementHover} />;
             if ("type" in item && item.type === "_faq_block")
-              return <FAQSection key={idx} pairs={item.pairs} activeId={activeRationaleId} onHover={onElementHover} />;
+              return <FAQSection key={idx} pairs={item.pairs} activeId={activeElementId} onHover={onElementHover} />;
             if ("type" in item && item.type === "_blogs_block")
-              return <RelatedBlogsSection key={idx} items={item.items} activeId={activeRationaleId} onHover={onElementHover} />;
+              return <RelatedBlogsSection key={idx} items={item.items} activeId={activeElementId} onHover={onElementHover} />;
             if ("type" in item && item.type === "_sources_block")
-              return <SourcesSection key={idx} items={item.items} activeId={activeRationaleId} onHover={onElementHover} />;
+              return <SourcesSection key={idx} items={item.items} activeId={activeElementId} onHover={onElementHover} />;
 
             // Li list
             if ("type" in item && item.type === "ul") {
               return (
                 <ul key={idx} className="list-disc list-inside space-y-1 my-3 ml-2">
                   {item.items.map((li) => (
-                    <li key={li.id} onMouseEnter={() => onElementHover(li.rationaleIds)} onMouseLeave={() => onElementHover(null)}
-                      className={`text-sm text-gray-700 leading-relaxed rounded px-1 cursor-default transition-all ${hoverCls(li.rationaleIds, activeRationaleId)}`}
+                    <li key={li.id} onMouseEnter={() => onElementHover(li.id)} onMouseLeave={() => onElementHover(null)}
+                      className={`text-sm text-gray-700 leading-relaxed rounded px-1 cursor-default transition-all ${hoverCls(li.id, activeElementId)}`}
                       dangerouslySetInnerHTML={{ __html: bold(li.content) }} />
                   ))}
                 </ul>
@@ -553,28 +553,28 @@ export default function TextPanel({ elements, activeRationaleId, onElementHover 
             const el = item as TextElement;
 
             if (el.type === "label")
-              return <CmsLabel key={el.id} el={el} activeId={activeRationaleId} onHover={onElementHover} />;
+              return <CmsLabel key={el.id} el={el} activeId={activeElementId} onHover={onElementHover} />;
             if (el.type === "cta")
-              return <CTAButton key={el.id} el={el} activeId={activeRationaleId} onHover={onElementHover} />;
+              return <CTAButton key={el.id} el={el} activeId={activeElementId} onHover={onElementHover} />;
             if (el.type === "placeholder")
-              return <PlaceholderBlock key={el.id} el={el} activeId={activeRationaleId} onHover={onElementHover} />;
+              return <PlaceholderBlock key={el.id} el={el} activeId={activeElementId} onHover={onElementHover} />;
             if (el.type === "table")
-              return <DataTable key={el.id} el={el} activeId={activeRationaleId} onHover={onElementHover} />;
+              return <DataTable key={el.id} el={el} activeId={activeElementId} onHover={onElementHover} />;
 
             if (el.type === "h1" || el.type === "h2" || el.type === "h3") {
               const Tag = el.type as "h1" | "h2" | "h3";
               const cls = { h1: "text-2xl font-bold text-gray-900 mt-4 mb-2", h2: "text-xl font-semibold text-gray-800 mt-8 mb-2 pb-1 border-b border-gray-200", h3: "text-base font-semibold text-gray-700 mt-5 mb-1.5" }[el.type];
               return (
-                <Tag key={el.id} onMouseEnter={() => onElementHover(el.rationaleIds)} onMouseLeave={() => onElementHover(null)}
-                  className={`${cls} rounded px-1 -mx-1 cursor-default transition-all ${hoverCls(el.rationaleIds, activeRationaleId)}`}
+                <Tag key={el.id} onMouseEnter={() => onElementHover(el.id)} onMouseLeave={() => onElementHover(null)}
+                  className={`${cls} rounded px-1 -mx-1 cursor-default transition-all ${hoverCls(el.id, activeElementId)}`}
                   dangerouslySetInnerHTML={{ __html: bold(el.content) }} />
               );
             }
 
             // p / default
             return (
-              <p key={el.id} onMouseEnter={() => onElementHover(el.rationaleIds)} onMouseLeave={() => onElementHover(null)}
-                className={`text-sm text-gray-700 leading-relaxed my-3 rounded px-1 -mx-1 cursor-default transition-all ${hoverCls(el.rationaleIds, activeRationaleId)}`}
+              <p key={el.id} onMouseEnter={() => onElementHover(el.id)} onMouseLeave={() => onElementHover(null)}
+                className={`text-sm text-gray-700 leading-relaxed my-3 rounded px-1 -mx-1 cursor-default transition-all ${hoverCls(el.id, activeElementId)}`}
                 dangerouslySetInnerHTML={{ __html: bold(el.content) }} />
             );
           })}

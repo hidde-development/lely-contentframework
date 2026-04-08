@@ -3,7 +3,7 @@
 import { useState } from "react";
 import InputPanel from "@/components/InputPanel";
 import TextPanel from "@/components/TextPanel";
-import RationalePanel from "@/components/RationalePanel";
+import QualityPanel from "@/components/RationalePanel";
 import ProgressBar from "@/components/ProgressBar";
 import type { GenerateInput, GeneratedContent } from "@/lib/types";
 
@@ -12,15 +12,14 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [hoveredRationaleIds, setHoveredRationaleIds] = useState<string[]>([]);
-  const [activeRationaleId, setActiveRationaleId] = useState<string | null>(null);
+  // Single shared state: which element ID is currently active (from either panel)
+  const [activeElementId, setActiveElementId] = useState<string | null>(null);
 
   async function handleGenerate(input: GenerateInput) {
     setIsLoading(true);
     setError(null);
     setContent(null);
-    setHoveredRationaleIds([]);
-    setActiveRationaleId(null);
+    setActiveElementId(null);
 
     try {
       const res = await fetch("/api/generate", {
@@ -41,16 +40,6 @@ export default function Home() {
     } finally {
       setIsLoading(false);
     }
-  }
-
-  function handleElementHover(rationaleIds: string[] | null) {
-    setHoveredRationaleIds(rationaleIds ?? []);
-    setActiveRationaleId(null);
-  }
-
-  function handleItemHover(id: string | null) {
-    setActiveRationaleId(id);
-    setHoveredRationaleIds([]);
   }
 
   return (
@@ -83,13 +72,13 @@ export default function Home() {
         <InputPanel onGenerate={handleGenerate} isLoading={isLoading} />
         <TextPanel
           elements={content?.text ?? []}
-          activeRationaleId={activeRationaleId}
-          onElementHover={handleElementHover}
+          activeElementId={activeElementId}
+          onElementHover={setActiveElementId}
         />
-        <RationalePanel
-          items={content?.rationale ?? []}
-          highlightedIds={hoveredRationaleIds}
-          onItemHover={handleItemHover}
+        <QualityPanel
+          quality={content?.quality ?? null}
+          activeElementId={activeElementId}
+          onActionHover={setActiveElementId}
         />
       </div>
     </div>

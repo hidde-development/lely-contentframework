@@ -1,62 +1,70 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { RationaleItem, RationaleType, TemplateModule } from "@/lib/types";
+import type { QualityReport, QualityCategory, ActionItem } from "@/lib/types";
 
-interface RationalePanelProps {
-  items: RationaleItem[];
-  highlightedIds: string[];
-  onItemHover: (id: string | null) => void;
+interface QualityPanelProps {
+  quality: QualityReport | null;
+  activeElementId: string | null;
+  onActionHover: (elementId: string | null) => void;
 }
 
-// ── Tab definitions ────────────────────────────────────────────────────────────
+type Tab = "all" | QualityCategory;
 
-type Tab = "all" | "seo" | "geo" | "branding" | "strategy";
-
-const TABS: { id: Tab; label: string; types: RationaleType[] }[] = [
-  { id: "all",      label: "All",      types: ["seo", "geo", "both", "tov", "brand", "strategy"] },
-  { id: "seo",      label: "SEO",      types: ["seo", "both"] },
-  { id: "geo",      label: "GEO",      types: ["geo", "both"] },
-  { id: "branding", label: "Branding", types: ["tov", "brand"] },
-  { id: "strategy", label: "Strategy", types: ["strategy"] },
+const TABS: { id: Tab; label: string }[] = [
+  { id: "all",      label: "All" },
+  { id: "seo",      label: "SEO" },
+  { id: "geo",      label: "GEO" },
+  { id: "brand",    label: "Brand" },
+  { id: "strategy", label: "Strategy" },
 ];
 
-// ── Badge styles ───────────────────────────────────────────────────────────────
-
-const typeBadge: Record<RationaleType, { label: string; className: string }> = {
-  seo:      { label: "SEO",           className: "bg-blue-100 text-blue-700 border border-blue-200" },
-  geo:      { label: "GEO",           className: "bg-purple-100 text-purple-700 border border-purple-200" },
-  both:     { label: "SEO + GEO",     className: "bg-emerald-100 text-emerald-700 border border-emerald-200" },
-  tov:      { label: "Tone of voice", className: "bg-rose-100 text-rose-700 border border-rose-200" },
-  brand:    { label: "Brand",         className: "bg-amber-100 text-amber-700 border border-amber-200" },
-  strategy: { label: "Strategy",      className: "bg-violet-100 text-violet-700 border border-violet-200" },
+const CATEGORY_STYLE: Record<QualityCategory, { badge: string; dot: string }> = {
+  seo:      { badge: "bg-blue-100 text-blue-700 border border-blue-200",     dot: "bg-blue-500" },
+  geo:      { badge: "bg-purple-100 text-purple-700 border border-purple-200", dot: "bg-purple-500" },
+  brand:    { badge: "bg-amber-100 text-amber-700 border border-amber-200",  dot: "bg-amber-500" },
+  strategy: { badge: "bg-violet-100 text-violet-700 border border-violet-200", dot: "bg-violet-500" },
 };
 
-const moduleLabels: Record<TemplateModule, string> = {
-  META:        "SEO Metadata",
-  HERO:        "Hero",
-  INTRO:       "Introduction",
-  USP:         "USP Block",
-  BODY:        "Body Text",
-  TESTIMONIAL: "Testimonials",
-  CTA:         "Natural CTA",
-  FAQ:         "FAQ",
-  BLOGS:       "Related Blogs",
-  PRODUCTS:    "Related Products",
+const SEVERITY_STYLE: Record<ActionItem["severity"], { dot: string; label: string }> = {
+  high:   { dot: "bg-red-500",    label: "High" },
+  medium: { dot: "bg-amber-400",  label: "Medium" },
+  low:    { dot: "bg-gray-300",   label: "Low" },
 };
 
-const moduleColors: Record<TemplateModule, string> = {
-  META:        "bg-violet-100 text-violet-700",
-  HERO:        "bg-slate-100 text-slate-600",
-  INTRO:       "bg-sky-100 text-sky-700",
-  USP:         "bg-blue-100 text-blue-700",
-  BODY:        "bg-indigo-100 text-indigo-700",
-  TESTIMONIAL: "bg-pink-100 text-pink-700",
-  CTA:         "bg-amber-100 text-amber-700",
-  FAQ:         "bg-yellow-100 text-yellow-700",
-  BLOGS:       "bg-teal-100 text-teal-700",
-  PRODUCTS:    "bg-gray-100 text-gray-600",
-};
+function scoreColor(score: number): string {
+  if (score >= 80) return "text-green-600";
+  if (score >= 60) return "text-amber-600";
+  return "text-red-600";
+}
+
+function scoreBg(score: number): string {
+  if (score >= 80) return "bg-green-50 border-green-200";
+  if (score >= 60) return "bg-amber-50 border-amber-200";
+  return "bg-red-50 border-red-200";
+}
+
+function scoreLabel(score: number): string {
+  if (score >= 80) return "Good";
+  if (score >= 60) return "Needs work";
+  return "Critical";
+}
+
+function ScoreCard({ category, score }: { category: QualityCategory; score: number }) {
+  const label = category.charAt(0).toUpperCase() + category.slice(1);
+  return (
+    <div className={`rounded-lg border px-3 py-2.5 ${scoreBg(score)}`}>
+      <div className="flex items-center justify-between mb-0.5">
+        <span className="text-xs font-semibold text-gray-600">{label}</span>
+        <span className={`text-xs font-medium ${scoreColor(score)}`}>{scoreLabel(score)}</span>
+      </div>
+      <div className="flex items-end gap-1">
+        <span className={`text-2xl font-bold tabular-nums leading-none ${scoreColor(score)}`}>{score}</span>
+        <span className="text-xs text-gray-400 mb-0.5">/100</span>
+      </div>
+    </div>
+  );
+}
 
 // ── Empty state ────────────────────────────────────────────────────────────────
 
@@ -66,18 +74,18 @@ function EmptyState() {
       <div className="px-5 py-4 border-b border-gray-200">
         <div className="flex items-center gap-2 mb-1">
           <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Rationale</h2>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Quality check</h2>
         </div>
-        <p className="text-xs text-gray-400">Hover over text to see the explanation</p>
+        <p className="text-xs text-gray-400">Generate a page to see the quality audit</p>
       </div>
       <div className="flex-1 flex items-center justify-center px-6">
         <div className="text-center">
           <div className="w-14 h-14 rounded-xl bg-gray-200 flex items-center justify-center mx-auto mb-3">
             <svg className="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <p className="text-sm text-gray-400">The rationale for each text element will appear here</p>
+          <p className="text-sm text-gray-400">The quality audit will identify what needs your attention</p>
         </div>
       </div>
     </aside>
@@ -86,56 +94,59 @@ function EmptyState() {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export default function RationalePanel({ items, highlightedIds, onItemHover }: RationalePanelProps) {
+export default function QualityPanel({ quality, activeElementId, onActionHover }: QualityPanelProps) {
   const [activeTab, setActiveTab] = useState<Tab>("all");
   const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
-  // Auto-switch to the tab that contains the first highlighted item
+  // Scroll to action item when text element is hovered
   useEffect(() => {
-    if (highlightedIds.length === 0) return;
-    const firstId = highlightedIds[0];
-    const item = items.find((i) => i.id === firstId);
-    if (!item) return;
-
-    const targetTab = TABS.find((t) => t.id !== "all" && t.types.includes(item.type));
-    if (targetTab && activeTab !== "all") {
-      // Only auto-switch if not on "all" and the item is not visible in current tab
-      const currentTabTypes = TABS.find((t) => t.id === activeTab)?.types ?? [];
-      if (!currentTabTypes.includes(item.type)) setActiveTab(targetTab.id);
-    }
-  }, [highlightedIds]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    if (highlightedIds.length > 0) {
-      const el = itemRefs.current.get(highlightedIds[0]);
+    if (!activeElementId || !quality) return;
+    const action = quality.actions.find((a) => a.elementId === activeElementId);
+    if (action) {
+      const el = itemRefs.current.get(action.id);
       if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
-  }, [highlightedIds]);
+  }, [activeElementId, quality]);
 
-  if (items.length === 0) return <EmptyState />;
+  if (!quality) return <EmptyState />;
 
-  const activeTypes = TABS.find((t) => t.id === activeTab)?.types ?? [];
-  const visibleItems = activeTab === "all" ? items : items.filter((i) => activeTypes.includes(i.type));
+  const visibleActions = activeTab === "all"
+    ? quality.actions
+    : quality.actions.filter((a) => a.category === activeTab);
 
-  // Count per tab for badges
   const tabCounts: Record<Tab, number> = {
-    all:      items.length,
-    seo:      items.filter((i) => i.type === "seo" || i.type === "both").length,
-    geo:      items.filter((i) => i.type === "geo" || i.type === "both").length,
-    branding: items.filter((i) => i.type === "tov" || i.type === "brand").length,
-    strategy: items.filter((i) => i.type === "strategy").length,
+    all:      quality.actions.length,
+    seo:      quality.actions.filter((a) => a.category === "seo").length,
+    geo:      quality.actions.filter((a) => a.category === "geo").length,
+    brand:    quality.actions.filter((a) => a.category === "brand").length,
+    strategy: quality.actions.filter((a) => a.category === "strategy").length,
   };
+
+  const overallScore = Math.round(
+    (quality.scores.seo + quality.scores.geo + quality.scores.brand + quality.scores.strategy) / 4
+  );
 
   return (
     <aside className="w-96 min-w-[320px] bg-gray-50 h-full overflow-hidden flex flex-col">
       {/* Header */}
       <div className="px-5 py-4 border-b border-gray-200">
         <div className="flex items-center gap-2 mb-1">
-          <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Rationale</h2>
-          <span className="ml-auto text-xs text-gray-400">{visibleItems.length} of {items.length}</span>
+          <div className={`w-2 h-2 rounded-full ${overallScore >= 80 ? "bg-green-500" : overallScore >= 60 ? "bg-amber-500" : "bg-red-500"}`}></div>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Quality check</h2>
+          <span className="ml-auto text-xs text-gray-400">Overall: <span className={`font-bold ${scoreColor(overallScore)}`}>{overallScore}/100</span></span>
         </div>
-        <p className="text-xs text-gray-400">Hover over text to see the explanation</p>
+        <p className="text-xs text-gray-400 mb-3">
+          {quality.actions.length === 0
+            ? "No issues found. All criteria met."
+            : `${quality.actions.filter(a => a.severity === "high").length} high · ${quality.actions.filter(a => a.severity === "medium").length} medium · ${quality.actions.filter(a => a.severity === "low").length} low`}
+        </p>
+
+        {/* Score cards */}
+        <div className="grid grid-cols-2 gap-2">
+          {(Object.entries(quality.scores) as [QualityCategory, number][]).map(([cat, score]) => (
+            <ScoreCard key={cat} category={cat} score={score} />
+          ))}
+        </div>
       </div>
 
       {/* Tabs */}
@@ -148,56 +159,76 @@ export default function RationalePanel({ items, highlightedIds, onItemHover }: R
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t whitespace-nowrap border-b-2 transition-colors ${
-                isActive
-                  ? "border-gray-800 text-gray-800"
-                  : "border-transparent text-gray-400 hover:text-gray-600"
+                isActive ? "border-gray-800 text-gray-800" : "border-transparent text-gray-400 hover:text-gray-600"
               }`}
             >
               {tab.label}
               {count > 0 && (
                 <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${
                   isActive ? "bg-gray-800 text-white" : "bg-gray-100 text-gray-500"
-                }`}>
-                  {count}
-                </span>
+                }`}>{count}</span>
               )}
             </button>
           );
         })}
       </div>
 
-      {/* Items */}
+      {/* Action items */}
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
-        {visibleItems.length === 0 ? (
+        {visibleActions.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-xs text-gray-400">No {activeTab} rationale items generated.</p>
+            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-2">
+              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <p className="text-xs text-gray-400">All {activeTab === "all" ? "" : activeTab + " "}criteria met.</p>
           </div>
         ) : (
-          visibleItems.map((item, idx) => {
-            const isHighlighted = highlightedIds.includes(item.id);
-            const badge = typeBadge[item.type] ?? typeBadge.seo;
-            const modColor = item.module ? moduleColors[item.module] : "bg-gray-100 text-gray-600";
-            const modLabel = item.module ? moduleLabels[item.module] : "";
+          visibleActions.map((action) => {
+            const isHighlighted = action.elementId === activeElementId;
+            const catStyle = CATEGORY_STYLE[action.category];
+            const sevStyle = SEVERITY_STYLE[action.severity];
 
             return (
               <div
-                key={item.id}
-                ref={(el) => { if (el) itemRefs.current.set(item.id, el); else itemRefs.current.delete(item.id); }}
-                onMouseEnter={() => onItemHover(item.id)}
-                onMouseLeave={() => onItemHover(null)}
+                key={action.id}
+                ref={(el) => { if (el) itemRefs.current.set(action.id, el); else itemRefs.current.delete(action.id); }}
+                onMouseEnter={() => onActionHover(action.elementId ?? null)}
+                onMouseLeave={() => onActionHover(null)}
                 className={`rounded-xl p-3.5 border cursor-default transition-all ${
                   isHighlighted ? "bg-yellow-50 border-yellow-300 shadow-sm" : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm"
                 }`}
               >
-                <div className="flex items-start gap-2 mb-2 flex-wrap">
-                  <span className="text-xs font-bold text-gray-400 tabular-nums">{String(idx + 1).padStart(2, "0")}</span>
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${badge.className}`}>{badge.label}</span>
-                  {item.module && (
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${modColor}`}>{modLabel}</span>
-                  )}
+                {/* Top row: severity + category + criterion */}
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <span className="flex items-center gap-1.5 text-xs font-medium text-gray-500">
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${sevStyle.dot}`}></span>
+                    {sevStyle.label}
+                  </span>
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${catStyle.badge}`}>
+                    {action.category.charAt(0).toUpperCase() + action.category.slice(1)}
+                  </span>
+                  <span className="text-xs font-mono font-bold text-gray-400 ml-auto">{action.criterion}</span>
                 </div>
-                <p className="text-xs font-medium text-gray-500 mb-1 italic">{item.element}</p>
-                <p className="text-xs text-gray-600 leading-relaxed">{item.explanation}</p>
+
+                {/* Issue */}
+                <p className="text-xs font-semibold text-gray-700 mb-2 leading-relaxed">{action.issue}</p>
+
+                {/* Fix */}
+                <div className="flex items-start gap-2 bg-gray-50 rounded-lg px-3 py-2">
+                  <svg className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  <p className="text-xs text-gray-600 leading-relaxed">{action.fix}</p>
+                </div>
+
+                {/* Element ref badge */}
+                {action.elementId && (
+                  <p className="text-xs text-gray-400 mt-2">
+                    ↑ Hover to highlight element in text
+                  </p>
+                )}
               </div>
             );
           })
