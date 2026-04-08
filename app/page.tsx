@@ -30,13 +30,13 @@ export default function Home() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Genereren mislukt");
+        throw new Error(data.error || "Generation failed");
       }
 
       const data: GeneratedContent = await res.json();
       setContent(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Er is een fout opgetreden");
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -62,7 +62,7 @@ export default function Home() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </div>
-          <span className="text-sm font-semibold text-white">GEO & SEO Tekstgenerator</span>
+          <span className="text-sm font-semibold text-white">GEO & SEO Text Generator</span>
         </div>
 
         {error && (

@@ -5,13 +5,13 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "GEO & SEO Tekstgenerator",
-  description: "Genereer geoptimaliseerde teksten voor zoekmachines en AI",
+  title: "GEO & SEO Text Generator",
+  description: "Generate optimised content for search engines and AI",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="nl" className="h-full">
+    <html lang="en-GB" className="h-full">
       <body className={`${inter.className} h-full bg-gray-100`}>{children}</body>
     </html>
   );

@@ -165,7 +165,7 @@ Volg de volledige template-structuur (modules A t/m H) en geef bij elk element d
 
     const rawContent = message.content[0];
     if (rawContent.type !== "text") {
-      return NextResponse.json({ error: "Onverwacht antwoord van Claude" }, { status: 500 });
+      return NextResponse.json({ error: "Unexpected response from Claude" }, { status: 500 });
     }
 
     let parsed: GeneratedContent;
@@ -174,7 +174,7 @@ Volg de volledige template-structuur (modules A t/m H) en geef bij elk element d
     } catch {
       const jsonMatch = rawContent.text.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
-        return NextResponse.json({ error: "Kon de gegenereerde tekst niet verwerken" }, { status: 500 });
+        return NextResponse.json({ error: "Could not parse the generated content" }, { status: 500 });
       }
       parsed = JSON.parse(jsonMatch[0]);
     }
@@ -182,6 +182,6 @@ Volg de volledige template-structuur (modules A t/m H) en geef bij elk element d
     return NextResponse.json(parsed);
   } catch (error) {
     console.error("Claude API error:", error);
-    return NextResponse.json({ error: "Er is een fout opgetreden bij het genereren van de tekst" }, { status: 500 });
+    return NextResponse.json({ error: "An error occurred whilst generating the text" }, { status: 500 });
   }
 }

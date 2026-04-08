@@ -16,14 +16,14 @@ const typeBadge: Record<string, { label: string; className: string }> = {
 };
 
 const moduleLabels: Record<TemplateModule, string> = {
-  A: "Navigatie & H1",
+  A: "Navigation & H1",
   B: "E-E-A-T & Meta",
   C: "Key Takeaways",
   D: "Content Chunks",
-  E: "Tabellen & Data",
+  E: "Tables & Data",
   F: "Multimedia",
   G: "FAQ",
-  H: "Bronvermelding",
+  H: "Sources",
   I: "Footer / NAP",
 };
 
@@ -57,7 +57,7 @@ export default function RationalePanel({ items, highlightedIds, onItemHover }: R
             <div className="w-2 h-2 rounded-full bg-amber-500"></div>
             <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Rationale</h2>
           </div>
-          <p className="text-xs text-gray-400">Hover over tekst om de toelichting te zien</p>
+          <p className="text-xs text-gray-400">Hover over text to see the explanation</p>
         </div>
         <div className="flex-1 flex items-center justify-center px-6">
           <div className="text-center">
@@ -66,7 +66,7 @@ export default function RationalePanel({ items, highlightedIds, onItemHover }: R
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg>
             </div>
-            <p className="text-sm text-gray-400">Hier verschijnt de rationale per tekstelement</p>
+            <p className="text-sm text-gray-400">The rationale for each text element will appear here</p>
           </div>
         </div>
       </aside>
@@ -76,7 +76,6 @@ export default function RationalePanel({ items, highlightedIds, onItemHover }: R
   const seoCount = items.filter((i) => i.type === "seo" || i.type === "both").length;
   const geoCount = items.filter((i) => i.type === "geo" || i.type === "both").length;
 
-  // Groepeer per module voor de teller
   const moduleCounts = items.reduce<Partial<Record<TemplateModule, number>>>((acc, item) => {
     if (item.module) acc[item.module] = (acc[item.module] ?? 0) + 1;
     return acc;
@@ -89,11 +88,11 @@ export default function RationalePanel({ items, highlightedIds, onItemHover }: R
         <div className="flex items-center gap-2 mb-1">
           <div className="w-2 h-2 rounded-full bg-amber-500"></div>
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Rationale</h2>
-          <span className="ml-auto text-xs text-gray-400">{items.length} punten</span>
+          <span className="ml-auto text-xs text-gray-400">{items.length} items</span>
         </div>
-        <p className="text-xs text-gray-400 mb-3">Hover over tekst om de toelichting te zien</p>
+        <p className="text-xs text-gray-400 mb-3">Hover over text to see the explanation</p>
 
-        {/* SEO / GEO tellers */}
+        {/* SEO / GEO counts */}
         <div className="flex gap-2 mb-3">
           <div className="flex items-center gap-1.5 bg-blue-50 rounded-lg px-2.5 py-1.5">
             <span className="text-xs font-semibold text-blue-700">{seoCount}</span>
@@ -105,7 +104,7 @@ export default function RationalePanel({ items, highlightedIds, onItemHover }: R
           </div>
         </div>
 
-        {/* Module-overzicht */}
+        {/* Module breakdown */}
         <div className="flex flex-wrap gap-1">
           {(Object.entries(moduleCounts) as [TemplateModule, number][]).map(([mod, count]) => (
             <span key={mod} className={`text-xs px-2 py-0.5 rounded-full font-medium ${moduleColors[mod]}`}>
@@ -138,20 +137,18 @@ export default function RationalePanel({ items, highlightedIds, onItemHover }: R
                   : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm"
               }`}
             >
-              <div className="flex items-start justify-between gap-2 mb-2 flex-wrap">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-bold text-gray-400 tabular-nums">
-                    {String(idx + 1).padStart(2, "0")}
+              <div className="flex items-start gap-2 mb-2 flex-wrap">
+                <span className="text-xs font-bold text-gray-400 tabular-nums">
+                  {String(idx + 1).padStart(2, "0")}
+                </span>
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${badge.className}`}>
+                  {badge.label}
+                </span>
+                {item.module && (
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${modColor}`}>
+                    {item.module} · {modLabel}
                   </span>
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${badge.className}`}>
-                    {badge.label}
-                  </span>
-                  {item.module && (
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${modColor}`}>
-                      {item.module} · {modLabel}
-                    </span>
-                  )}
-                </div>
+                )}
               </div>
               <p className="text-xs font-medium text-gray-500 mb-1 italic">{item.element}</p>
               <p className="text-xs text-gray-600 leading-relaxed">{item.explanation}</p>

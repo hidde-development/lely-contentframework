@@ -35,73 +35,73 @@ export default function InputPanel({ onGenerate, isLoading }: InputPanelProps) {
           <div className="w-2 h-2 rounded-full bg-brand-500"></div>
           <h2 className="text-sm font-semibold text-white uppercase tracking-wider">Input</h2>
         </div>
-        <p className="text-xs text-gray-400">Vul de gegevens in voor je tekst</p>
+        <p className="text-xs text-gray-400">Enter your content details below</p>
       </div>
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-5">
-        {/* Onderwerp */}
+        {/* Topic */}
         <div>
           <label className="block text-xs font-medium text-gray-300 mb-1.5">
-            Onderwerp <span className="text-red-400">*</span>
+            Topic <span className="text-red-400">*</span>
           </label>
           <textarea
             value={form.topic}
             onChange={(e) => handleChange("topic", e.target.value)}
-            placeholder="Bijv. Melkrobots voor de moderne veehouder"
+            placeholder="E.g. Milking robots for the modern dairy farmer"
             rows={3}
             required
             className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 resize-none transition-colors"
           />
         </div>
 
-        {/* Hoofdzoekwoord */}
+        {/* Primary keyword */}
         <div>
           <label className="block text-xs font-medium text-gray-300 mb-1.5">
-            Hoofdzoekwoord <span className="text-red-400">*</span>
+            Primary keyword <span className="text-red-400">*</span>
           </label>
           <input
             type="text"
             value={form.mainKeyword}
             onChange={(e) => handleChange("mainKeyword", e.target.value)}
-            placeholder="Bijv. melkrobot kopen"
+            placeholder="E.g. buy milking robot"
             required
             className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-colors"
           />
         </div>
 
-        {/* Subzoekwoorden */}
+        {/* Secondary keywords */}
         <div>
-          <label className="block text-xs font-medium text-gray-300 mb-1.5">Subzoekwoorden</label>
+          <label className="block text-xs font-medium text-gray-300 mb-1.5">Secondary keywords</label>
           <textarea
             value={form.subKeywords}
             onChange={(e) => handleChange("subKeywords", e.target.value)}
-            placeholder="Bijv. automatisch melken, melkmachine prijs, voordelen melkrobot"
+            placeholder="E.g. automatic milking, milking machine price, milking robot benefits"
             rows={3}
             className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 resize-none transition-colors"
           />
-          <p className="mt-1 text-xs text-gray-500">Scheid zoekwoorden met komma's</p>
+          <p className="mt-1 text-xs text-gray-500">Separate keywords with commas</p>
         </div>
 
-        {/* Te beantwoorden vragen */}
+        {/* Questions to answer */}
         <div>
-          <label className="block text-xs font-medium text-gray-300 mb-1.5">Te beantwoorden vragen</label>
+          <label className="block text-xs font-medium text-gray-300 mb-1.5">Questions to answer</label>
           <textarea
             value={form.questions}
             onChange={(e) => handleChange("questions", e.target.value)}
-            placeholder="Bijv. Wat kost een melkrobot? Hoeveel koeien kan een robot melken?"
+            placeholder="E.g. What does a milking robot cost? How many cows can a robot milk?"
             rows={4}
             className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 resize-none transition-colors"
           />
         </div>
 
-        {/* Extra instructies */}
+        {/* Additional instructions */}
         <div>
-          <label className="block text-xs font-medium text-gray-300 mb-1.5">Extra instructies</label>
+          <label className="block text-xs font-medium text-gray-300 mb-1.5">Additional instructions</label>
           <textarea
             value={form.instructions}
             onChange={(e) => handleChange("instructions", e.target.value)}
-            placeholder="Bijv. Schrijf in een zakelijke maar toegankelijke toon. Vermeld dat Lely marktleider is."
+            placeholder="E.g. Write in a professional but accessible tone. Mention that Lely is market leader."
             rows={4}
             className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 resize-none transition-colors"
           />
@@ -121,14 +121,14 @@ export default function InputPanel({ onGenerate, isLoading }: InputPanelProps) {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              Tekst genereren...
+              Generating text...
             </>
           ) : (
             <>
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-              Genereer tekst
+              Generate text
             </>
           )}
         </button>

@@ -27,7 +27,7 @@ interface ElementProps {
 function Breadcrumb({ el, activeRationaleId, onHover }: ElementProps) {
   return (
     <nav
-      aria-label="Kruimelpad"
+      aria-label="Breadcrumb"
       onMouseEnter={() => onHover(el.rationaleIds)}
       onMouseLeave={() => onHover(null)}
       className={`flex items-center gap-1.5 text-xs text-gray-400 mb-4 rounded px-1 -mx-1 cursor-default transition-all ${hoverClass(el.rationaleIds, activeRationaleId)}`}
@@ -43,7 +43,7 @@ function Breadcrumb({ el, activeRationaleId, onHover }: ElementProps) {
 }
 
 function EEATBlock({ el, activeRationaleId, onHover }: ElementProps) {
-  const author = el.meta?.author ?? "Onbekende auteur";
+  const author = el.meta?.author ?? "Unknown author";
   const published = el.meta?.published ?? "";
   const updated = el.meta?.updated ?? "";
 
@@ -61,9 +61,9 @@ function EEATBlock({ el, activeRationaleId, onHover }: ElementProps) {
       <div>
         <p className="text-xs font-semibold text-gray-700">{author}</p>
         <p className="text-xs text-gray-400">
-          {published && <>Gepubliceerd: <time dateTime={published}>{published}</time></>}
+          {published && <>Published: <time dateTime={published}>{published}</time></>}
           {updated && published && " · "}
-          {updated && <>Bijgewerkt: <time dateTime={updated}>{updated}</time></>}
+          {updated && <>Updated: <time dateTime={updated}>{updated}</time></>}
         </p>
       </div>
       <div className="ml-auto flex items-center gap-1 text-xs text-green-600 font-medium">
@@ -83,7 +83,7 @@ function KeyTakeawaysBlock({ items, activeRationaleId, onHover }: { items: TextE
         <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <span className="text-xs font-semibold text-blue-700 uppercase tracking-wider">Kernpunten</span>
+        <span className="text-xs font-semibold text-blue-700 uppercase tracking-wider">Key Takeaways</span>
       </div>
       <ul className="space-y-2">
         {items.map((el) => (
@@ -151,7 +151,7 @@ function FAQSection({ pairs, activeRationaleId, onHover }: { pairs: Array<{ q: T
   return (
     <div className="my-8">
       <h2 className="text-xl font-semibold text-gray-800 mb-4 pb-1 border-b border-gray-200">
-        Veelgestelde vragen
+        Frequently Asked Questions
       </h2>
       <div className="space-y-4">
         {pairs.map(({ q, a }, idx) => (
@@ -182,9 +182,9 @@ function FAQSection({ pairs, activeRationaleId, onHover }: { pairs: Array<{ q: T
 function SourcesSection({ items, activeRationaleId, onHover }: { items: TextElement[]; activeRationaleId: string | null; onHover: (ids: string[] | null) => void }) {
   return (
     <div className="my-6 pt-4 border-t border-gray-200">
-      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Bronnen</p>
+      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Sources</p>
       <ol className="space-y-2 list-decimal list-inside">
-        {items.map((el, idx) => (
+        {items.map((el) => (
           <li
             key={el.id}
             onMouseEnter={() => onHover(el.rationaleIds)}
@@ -215,25 +215,21 @@ export default function TextPanel({ elements, activeRationaleId, onElementHover 
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
-          <h3 className="text-base font-semibold text-gray-700 mb-2">Geen tekst gegenereerd</h3>
+          <h3 className="text-base font-semibold text-gray-700 mb-2">No text generated yet</h3>
           <p className="text-sm text-gray-400">
-            Vul de inputvelden in en klik op &ldquo;Genereer tekst&rdquo; om te beginnen.
+            Fill in the fields on the left and click &ldquo;Generate text&rdquo; to get started.
           </p>
         </div>
       </main>
     );
   }
 
-  // Groepeer gerelateerde elementen
   const keytakeaways = elements.filter((e) => e.type === "keytakeaway");
   const faq_qs = elements.filter((e) => e.type === "faq_q");
   const faq_as = elements.filter((e) => e.type === "faq_a");
   const sources = elements.filter((e) => e.type === "source");
-
-  // Bouw FAQ-paren
   const faqPairs = faq_qs.map((q, i) => ({ q, a: faq_as[i] })).filter((p) => p.a);
 
-  // Bouw gegroepeerde li-elementen
   type GroupedItem =
     | TextElement
     | { type: "ul"; items: TextElement[] }
@@ -248,7 +244,6 @@ export default function TextPanel({ elements, activeRationaleId, onElementHover 
   let sourcesAdded = false;
 
   for (const el of elements) {
-    // Sla individuele faq/source/keytakeaway over — worden als blok toegevoegd
     if (el.type === "faq_a") continue;
 
     if (el.type === "keytakeaway") {
@@ -299,11 +294,10 @@ export default function TextPanel({ elements, activeRationaleId, onElementHover 
 
   return (
     <main className="flex-1 bg-white border-r border-gray-200 h-full overflow-hidden flex flex-col">
-      {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-green-500"></div>
-          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Gegenereerde tekst</h2>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Generated text</h2>
         </div>
         <button
           onClick={() => {
@@ -315,15 +309,13 @@ export default function TextPanel({ elements, activeRationaleId, onElementHover 
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
           </svg>
-          Kopieer
+          Copy
         </button>
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto px-8 py-6">
         <div className="max-w-2xl mx-auto">
           {grouped.map((item, idx) => {
-            // Speciale blokken
             if ("type" in item && item.type === "keytakeaways_block") {
               return <KeyTakeawaysBlock key={idx} items={item.items} activeRationaleId={activeRationaleId} onHover={onElementHover} />;
             }
@@ -334,7 +326,6 @@ export default function TextPanel({ elements, activeRationaleId, onElementHover 
               return <SourcesSection key={idx} items={item.items} activeRationaleId={activeRationaleId} onHover={onElementHover} />;
             }
 
-            // Li-lijst
             if ("type" in item && item.type === "ul") {
               return (
                 <ul key={idx} className="list-disc list-inside space-y-1 my-3 ml-2">
@@ -351,7 +342,6 @@ export default function TextPanel({ elements, activeRationaleId, onElementHover 
               );
             }
 
-            // Individuele elementen
             const el = item as TextElement;
 
             if (el.type === "breadcrumb") return <Breadcrumb key={el.id} el={el} activeRationaleId={activeRationaleId} onHover={onElementHover} />;
@@ -371,7 +361,6 @@ export default function TextPanel({ elements, activeRationaleId, onElementHover 
               );
             }
 
-            // p / intro
             return (
               <p
                 key={el.id}
