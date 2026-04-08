@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { RationaleItem } from "@/lib/types";
+import type { RationaleItem, TemplateModule } from "@/lib/types";
 
 interface RationalePanelProps {
   items: RationaleItem[];
@@ -10,31 +10,42 @@ interface RationalePanelProps {
 }
 
 const typeBadge: Record<string, { label: string; className: string }> = {
-  seo: {
-    label: "SEO",
-    className: "bg-blue-100 text-blue-700 border border-blue-200",
-  },
-  geo: {
-    label: "GEO",
-    className: "bg-purple-100 text-purple-700 border border-purple-200",
-  },
-  both: {
-    label: "SEO + GEO",
-    className: "bg-emerald-100 text-emerald-700 border border-emerald-200",
-  },
+  seo: { label: "SEO", className: "bg-blue-100 text-blue-700 border border-blue-200" },
+  geo: { label: "GEO", className: "bg-purple-100 text-purple-700 border border-purple-200" },
+  both: { label: "SEO + GEO", className: "bg-emerald-100 text-emerald-700 border border-emerald-200" },
+};
+
+const moduleLabels: Record<TemplateModule, string> = {
+  A: "Navigatie & H1",
+  B: "E-E-A-T & Meta",
+  C: "Key Takeaways",
+  D: "Content Chunks",
+  E: "Tabellen & Data",
+  F: "Multimedia",
+  G: "FAQ",
+  H: "Bronvermelding",
+  I: "Footer / NAP",
+};
+
+const moduleColors: Record<TemplateModule, string> = {
+  A: "bg-slate-100 text-slate-600",
+  B: "bg-green-100 text-green-700",
+  C: "bg-blue-100 text-blue-700",
+  D: "bg-indigo-100 text-indigo-700",
+  E: "bg-orange-100 text-orange-700",
+  F: "bg-pink-100 text-pink-700",
+  G: "bg-yellow-100 text-yellow-700",
+  H: "bg-cyan-100 text-cyan-700",
+  I: "bg-gray-100 text-gray-600",
 };
 
 export default function RationalePanel({ items, highlightedIds, onItemHover }: RationalePanelProps) {
   const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
-  // Auto-scroll to first highlighted item
   useEffect(() => {
     if (highlightedIds.length > 0) {
-      const firstId = highlightedIds[0];
-      const el = itemRefs.current.get(firstId);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      }
+      const el = itemRefs.current.get(highlightedIds[0]);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
   }, [highlightedIds]);
 
@@ -65,6 +76,12 @@ export default function RationalePanel({ items, highlightedIds, onItemHover }: R
   const seoCount = items.filter((i) => i.type === "seo" || i.type === "both").length;
   const geoCount = items.filter((i) => i.type === "geo" || i.type === "both").length;
 
+  // Groepeer per module voor de teller
+  const moduleCounts = items.reduce<Partial<Record<TemplateModule, number>>>((acc, item) => {
+    if (item.module) acc[item.module] = (acc[item.module] ?? 0) + 1;
+    return acc;
+  }, {});
+
   return (
     <aside className="w-96 min-w-[320px] bg-gray-50 h-full overflow-hidden flex flex-col">
       {/* Header */}
@@ -75,8 +92,9 @@ export default function RationalePanel({ items, highlightedIds, onItemHover }: R
           <span className="ml-auto text-xs text-gray-400">{items.length} punten</span>
         </div>
         <p className="text-xs text-gray-400 mb-3">Hover over tekst om de toelichting te zien</p>
-        {/* Stats */}
-        <div className="flex gap-2">
+
+        {/* SEO / GEO tellers */}
+        <div className="flex gap-2 mb-3">
           <div className="flex items-center gap-1.5 bg-blue-50 rounded-lg px-2.5 py-1.5">
             <span className="text-xs font-semibold text-blue-700">{seoCount}</span>
             <span className="text-xs text-blue-600">SEO</span>
@@ -86,13 +104,24 @@ export default function RationalePanel({ items, highlightedIds, onItemHover }: R
             <span className="text-xs text-purple-600">GEO</span>
           </div>
         </div>
+
+        {/* Module-overzicht */}
+        <div className="flex flex-wrap gap-1">
+          {(Object.entries(moduleCounts) as [TemplateModule, number][]).map(([mod, count]) => (
+            <span key={mod} className={`text-xs px-2 py-0.5 rounded-full font-medium ${moduleColors[mod]}`}>
+              {mod}: {count}
+            </span>
+          ))}
+        </div>
       </div>
 
       {/* Items */}
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
         {items.map((item, idx) => {
           const isHighlighted = highlightedIds.includes(item.id);
-          const badge = typeBadge[item.type] || typeBadge.seo;
+          const badge = typeBadge[item.type] ?? typeBadge.seo;
+          const modColor = item.module ? moduleColors[item.module] : "bg-gray-100 text-gray-600";
+          const modLabel = item.module ? moduleLabels[item.module] : "";
 
           return (
             <div
@@ -109,7 +138,7 @@ export default function RationalePanel({ items, highlightedIds, onItemHover }: R
                   : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm"
               }`}
             >
-              <div className="flex items-start justify-between gap-2 mb-2">
+              <div className="flex items-start justify-between gap-2 mb-2 flex-wrap">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-xs font-bold text-gray-400 tabular-nums">
                     {String(idx + 1).padStart(2, "0")}
@@ -117,9 +146,14 @@ export default function RationalePanel({ items, highlightedIds, onItemHover }: R
                   <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${badge.className}`}>
                     {badge.label}
                   </span>
+                  {item.module && (
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${modColor}`}>
+                      {item.module} · {modLabel}
+                    </span>
+                  )}
                 </div>
-                <span className="text-xs text-gray-400 italic shrink-0">{item.element}</span>
               </div>
+              <p className="text-xs font-medium text-gray-500 mb-1 italic">{item.element}</p>
               <p className="text-xs text-gray-600 leading-relaxed">{item.explanation}</p>
             </div>
           );
