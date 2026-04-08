@@ -1,17 +1,30 @@
 export type TextElementType =
   | "h1" | "h2" | "h3"
-  | "p" | "li" | "intro"
-  | "breadcrumb"
-  | "eeat"
-  | "keytakeaway"
-  | "table"
-  | "faq_q" | "faq_a"
-  | "source";
+  | "p" | "li"
+  | "meta_title"    // SEO meta title, max 65 characters
+  | "meta_desc"     // SEO meta description, max 155 characters
+  | "label"         // CMS section label — suggested by Claude, confirmed by user in CMS
+  | "usp"           // USP item: content = H3 heading (1–2 words), meta.description = 1 supporting sentence
+  | "cta"           // CTA button suggestion: content = button label, meta.hint = destination hint
+  | "placeholder"   // Content Claude cannot generate (testimonials, specific links) — user fills in
+  | "related_blog"  // Blog suggestion: content = proposed title, meta.description = one-line summary
+  | "faq_q" | "faq_a";
 
-export type RationaleType = "seo" | "geo" | "both";
+/** SEO/GEO visibility type */
+export type RationaleType = "seo" | "geo" | "both" | "tov" | "brand";
 
-/** Template modules A t/m I zoals gedefinieerd in de development guidelines */
-export type TemplateModule = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I";
+/** Lely page template blocks */
+export type TemplateModule =
+  | "META"
+  | "HERO"
+  | "INTRO"
+  | "USP"
+  | "BODY"
+  | "TESTIMONIAL"
+  | "CTA"
+  | "FAQ"
+  | "BLOGS"
+  | "PRODUCTS";
 
 export interface TableData {
   headers: string[];
@@ -23,16 +36,15 @@ export interface TextElement {
   type: TextElementType;
   content: string;
   rationaleIds: string[];
-  /** Alleen voor type === "table" */
-  tableData?: TableData;
-  /** Generiek metadata-veld. Voor "eeat": { author, published, updated }. Voor "source": { url } */
+  /** For "usp": meta.description = supporting sentence.
+   *  For "cta": meta.hint = destination hint.
+   *  For "related_blog": meta.description = one-line summary. */
   meta?: Record<string, string>;
 }
 
 export interface RationaleItem {
   id: string;
   type: RationaleType;
-  /** Template-module waartoe dit rationale-punt behoort */
   module: TemplateModule;
   element: string;
   explanation: string;
@@ -49,11 +61,17 @@ export interface KeywordEntry {
   isPrimary: boolean;
 }
 
+export interface ProductEntry {
+  name: string;
+  description: string;
+}
+
 export interface GenerateInput {
   topic: string;
   mainKeyword: string;
   subKeywords: string;
   keywords: KeywordEntry[];
+  products: ProductEntry[];
   instructions: string;
   questions: string;
 }

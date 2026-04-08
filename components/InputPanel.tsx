@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import type { GenerateInput, KeywordEntry } from "@/lib/types";
+import type { GenerateInput, KeywordEntry, ProductEntry } from "@/lib/types";
 
 interface InputPanelProps {
   onGenerate: (input: GenerateInput) => void;
@@ -33,10 +33,15 @@ export default function InputPanel({ onGenerate, isLoading }: InputPanelProps) {
   const [topic, setTopic] = useState("");
   const [keywords, setKeywords] = useState<KeywordEntry[]>([]);
   const [showPasteArea, setShowPasteArea] = useState(false);
+  const [products, setProducts] = useState<ProductEntry[]>([]);
+  const [productName, setProductName] = useState("");
+  const [productDesc, setProductDesc] = useState("");
+  const [showProductForm, setShowProductForm] = useState(false);
   const [instructions, setInstructions] = useState("");
   const [questions, setQuestions] = useState("");
   const pasteRef = useRef<HTMLTextAreaElement>(null);
 
+  // ── Keywords ──────────────────────────────────────
   function handlePaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
     const text = e.clipboardData.getData("text");
     const parsed = parseExcelPaste(text);
@@ -62,26 +67,36 @@ export default function InputPanel({ onGenerate, isLoading }: InputPanelProps) {
   function removeKeyword(idx: number) {
     setKeywords((prev) => {
       const next = prev.filter((_, i) => i !== idx);
-      // If removed was primary, make first one primary
-      if (prev[idx].isPrimary && next.length > 0) {
-        next[0].isPrimary = true;
-      }
+      if (prev[idx].isPrimary && next.length > 0) next[0].isPrimary = true;
       return next;
     });
   }
 
+  // ── Products ──────────────────────────────────────
+  function addProduct() {
+    if (!productName.trim()) return;
+    setProducts((prev) => [...prev, { name: productName.trim(), description: productDesc.trim() }]);
+    setProductName("");
+    setProductDesc("");
+    setShowProductForm(false);
+  }
+
+  function removeProduct(idx: number) {
+    setProducts((prev) => prev.filter((_, i) => i !== idx));
+  }
+
+  // ── Submit ────────────────────────────────────────
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const primary = keywords.find((k) => k.isPrimary);
     if (!topic || !primary) return;
 
-    const secondary = keywords.filter((k) => !k.isPrimary);
-
     onGenerate({
       topic,
       mainKeyword: primary.keyword,
-      subKeywords: secondary.map((k) => k.keyword).join(", "),
+      subKeywords: keywords.filter((k) => !k.isPrimary).map((k) => k.keyword).join(", "),
       keywords,
+      products,
       instructions,
       questions,
     });
@@ -101,7 +116,6 @@ export default function InputPanel({ onGenerate, isLoading }: InputPanelProps) {
         <p className="text-xs text-gray-400">Enter your content details below</p>
       </div>
 
-      {/* Form */}
       <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-5">
 
         {/* Topic */}
@@ -112,7 +126,7 @@ export default function InputPanel({ onGenerate, isLoading }: InputPanelProps) {
           <textarea
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            placeholder="E.g. Milking robots for the modern dairy farmer"
+            placeholder="E.g. Robotic milking in combination with grazing"
             rows={3}
             required
             className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 resize-none transition-colors"
@@ -126,17 +140,13 @@ export default function InputPanel({ onGenerate, isLoading }: InputPanelProps) {
               Keywords <span className="text-red-400">*</span>
             </label>
             {keywords.length > 0 && (
-              <button
-                type="button"
-                onClick={() => { setKeywords([]); setShowPasteArea(true); setTimeout(() => pasteRef.current?.focus(), 50); }}
-                className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
-              >
+              <button type="button" onClick={() => { setKeywords([]); setShowPasteArea(true); setTimeout(() => pasteRef.current?.focus(), 50); }}
+                className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
                 Clear
               </button>
             )}
           </div>
 
-          {/* Paste area */}
           {(keywords.length === 0 || showPasteArea) && (
             <div>
               <textarea
@@ -147,84 +157,109 @@ export default function InputPanel({ onGenerate, isLoading }: InputPanelProps) {
                 onChange={handlePasteAreaChange}
                 className="w-full bg-gray-800 border border-dashed border-gray-500 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 resize-none transition-colors"
               />
-              <p className="mt-1 text-xs text-gray-500">
-                Copy two columns from Excel (keyword + volume) and paste here
-              </p>
+              <p className="mt-1 text-xs text-gray-500">Copy two columns from Excel (keyword + volume) and paste here</p>
             </div>
           )}
 
-          {/* Parsed keyword list */}
           {keywords.length > 0 && !showPasteArea && (
             <div className="rounded-lg border border-gray-700 overflow-hidden">
-              {/* Column headers */}
               <div className="grid grid-cols-[auto_1fr_auto_auto] gap-x-2 items-center px-3 py-1.5 bg-gray-800 border-b border-gray-700">
-                <span className="text-xs text-gray-500 w-4"></span>
+                <span className="w-4"></span>
                 <span className="text-xs font-medium text-gray-400">Keyword</span>
                 <span className="text-xs font-medium text-gray-400 text-right">Volume</span>
                 <span className="w-4"></span>
               </div>
-
               <ul className="divide-y divide-gray-700/50 max-h-52 overflow-y-auto">
                 {keywords.map((kw, idx) => (
-                  <li
-                    key={idx}
-                    className={`grid grid-cols-[auto_1fr_auto_auto] gap-x-2 items-center px-3 py-2 transition-colors ${
-                      kw.isPrimary ? "bg-brand-500/10" : "hover:bg-gray-800/50"
-                    }`}
-                  >
-                    {/* Radio */}
-                    <button
-                      type="button"
-                      onClick={() => setPrimary(idx)}
+                  <li key={idx} className={`grid grid-cols-[auto_1fr_auto_auto] gap-x-2 items-center px-3 py-2 transition-colors ${kw.isPrimary ? "bg-brand-500/10" : "hover:bg-gray-800/50"}`}>
+                    <button type="button" onClick={() => setPrimary(idx)}
                       className="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors"
-                      style={{
-                        borderColor: kw.isPrimary ? "#4f6ef7" : "#4b5563",
-                        backgroundColor: kw.isPrimary ? "#4f6ef7" : "transparent",
-                      }}
-                      title="Set as primary keyword"
-                    >
+                      style={{ borderColor: kw.isPrimary ? "#4f6ef7" : "#4b5563", backgroundColor: kw.isPrimary ? "#4f6ef7" : "transparent" }}
+                      title="Set as primary keyword">
                       {kw.isPrimary && <span className="w-1.5 h-1.5 rounded-full bg-white block" />}
                     </button>
-
-                    {/* Keyword */}
-                    <span className={`text-xs truncate ${kw.isPrimary ? "text-white font-medium" : "text-gray-300"}`}>
-                      {kw.keyword}
-                    </span>
-
-                    {/* Volume */}
-                    <span className={`text-xs tabular-nums text-right ${kw.isPrimary ? "text-brand-500 font-semibold" : "text-gray-500"}`}>
-                      {formatVolume(kw.volume)}
-                    </span>
-
-                    {/* Remove */}
-                    <button
-                      type="button"
-                      onClick={() => removeKeyword(idx)}
-                      className="w-4 h-4 text-gray-600 hover:text-gray-300 transition-colors shrink-0"
-                    >
-                      <svg viewBox="0 0 16 16" fill="currentColor">
-                        <path d="M4.293 4.293a1 1 0 011.414 0L8 6.586l2.293-2.293a1 1 0 111.414 1.414L9.414 8l2.293 2.293a1 1 0 01-1.414 1.414L8 9.414l-2.293 2.293a1 1 0 01-1.414-1.414L6.586 8 4.293 5.707a1 1 0 010-1.414z" />
-                      </svg>
+                    <span className={`text-xs truncate ${kw.isPrimary ? "text-white font-medium" : "text-gray-300"}`}>{kw.keyword}</span>
+                    <span className={`text-xs tabular-nums text-right ${kw.isPrimary ? "text-brand-500 font-semibold" : "text-gray-500"}`}>{formatVolume(kw.volume)}</span>
+                    <button type="button" onClick={() => removeKeyword(idx)} className="w-4 h-4 text-gray-600 hover:text-gray-300 transition-colors shrink-0">
+                      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M4.293 4.293a1 1 0 011.414 0L8 6.586l2.293-2.293a1 1 0 111.414 1.414L9.414 8l2.293 2.293a1 1 0 01-1.414 1.414L8 9.414l-2.293 2.293a1 1 0 01-1.414-1.414L6.586 8 4.293 5.707a1 1 0 010-1.414z" /></svg>
                     </button>
                   </li>
                 ))}
               </ul>
-
-              {/* Summary */}
               <div className="px-3 py-2 bg-gray-800/50 border-t border-gray-700 flex items-center gap-2">
-                <span className="text-xs text-gray-500">
-                  {keywords.length} keyword{keywords.length !== 1 ? "s" : ""}
-                </span>
-                {primaryKeyword && (
-                  <>
-                    <span className="text-gray-600">·</span>
-                    <span className="text-xs text-brand-500 font-medium truncate">
-                      Primary: {primaryKeyword.keyword}
-                    </span>
-                  </>
-                )}
+                <span className="text-xs text-gray-500">{keywords.length} keyword{keywords.length !== 1 ? "s" : ""}</span>
+                {primaryKeyword && (<><span className="text-gray-600">·</span><span className="text-xs text-brand-500 font-medium truncate">Primary: {primaryKeyword.keyword}</span></>)}
               </div>
             </div>
+          )}
+        </div>
+
+        {/* Products to feature */}
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-xs font-medium text-gray-300">Products to feature</label>
+            {!showProductForm && (
+              <button type="button" onClick={() => setShowProductForm(true)}
+                className="text-xs text-brand-500 hover:text-brand-600 flex items-center gap-1 transition-colors">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Add product
+              </button>
+            )}
+          </div>
+
+          {/* Existing products */}
+          {products.length > 0 && (
+            <ul className="space-y-1.5 mb-2">
+              {products.map((p, idx) => (
+                <li key={idx} className="flex items-start gap-2 bg-gray-800 rounded-lg px-3 py-2 border border-gray-700">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-white truncate">{p.name}</p>
+                    {p.description && <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{p.description}</p>}
+                  </div>
+                  <button type="button" onClick={() => removeProduct(idx)} className="text-gray-600 hover:text-gray-300 shrink-0 mt-0.5 transition-colors">
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M4.293 4.293a1 1 0 011.414 0L8 6.586l2.293-2.293a1 1 0 111.414 1.414L9.414 8l2.293 2.293a1 1 0 01-1.414 1.414L8 9.414l-2.293 2.293a1 1 0 01-1.414-1.414L6.586 8 4.293 5.707a1 1 0 010-1.414z" /></svg>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/* Add product form */}
+          {showProductForm && (
+            <div className="bg-gray-800 border border-gray-600 rounded-lg p-3 space-y-2">
+              <input
+                type="text"
+                value={productName}
+                onChange={(e) => setProductName(e.target.value)}
+                placeholder="Product name (e.g. Lely Grazeway)"
+                className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition-colors"
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addProduct())}
+                autoFocus
+              />
+              <textarea
+                value={productDesc}
+                onChange={(e) => setProductDesc(e.target.value)}
+                placeholder="Short product description (optional — helps Claude write more accurately)"
+                rows={2}
+                className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 resize-none transition-colors"
+              />
+              <div className="flex gap-2">
+                <button type="button" onClick={addProduct} disabled={!productName.trim()}
+                  className="flex-1 bg-brand-500 hover:bg-brand-600 disabled:bg-gray-700 disabled:text-gray-500 text-white text-xs font-medium py-1.5 rounded-md transition-colors">
+                  Add
+                </button>
+                <button type="button" onClick={() => { setShowProductForm(false); setProductName(""); setProductDesc(""); }}
+                  className="flex-1 bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs font-medium py-1.5 rounded-md transition-colors">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {products.length === 0 && !showProductForm && (
+            <p className="text-xs text-gray-500">Add one or more Lely products to feature in the natural CTA section.</p>
           )}
         </div>
 
@@ -234,7 +269,7 @@ export default function InputPanel({ onGenerate, isLoading }: InputPanelProps) {
           <textarea
             value={questions}
             onChange={(e) => setQuestions(e.target.value)}
-            placeholder="E.g. What does a milking robot cost? How many cows can a robot milk?"
+            placeholder="E.g. Can robotic milking work with grazing? How many cows can graze with one robot?"
             rows={4}
             className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 resize-none transition-colors"
           />
@@ -246,8 +281,8 @@ export default function InputPanel({ onGenerate, isLoading }: InputPanelProps) {
           <textarea
             value={instructions}
             onChange={(e) => setInstructions(e.target.value)}
-            placeholder="E.g. Write in a professional but accessible tone. Mention that Lely is market leader."
-            rows={4}
+            placeholder="E.g. Focus on UK dairy farmers. Mention the Lely pay-off at the end."
+            rows={3}
             className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 resize-none transition-colors"
           />
         </div>
@@ -255,26 +290,12 @@ export default function InputPanel({ onGenerate, isLoading }: InputPanelProps) {
 
       {/* Generate button */}
       <div className="p-5 border-t border-gray-700">
-        <button
-          onClick={handleSubmit}
-          disabled={!canGenerate}
-          className="w-full bg-brand-500 hover:bg-brand-600 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed text-white font-medium py-2.5 px-4 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
-        >
+        <button onClick={handleSubmit} disabled={!canGenerate}
+          className="w-full bg-brand-500 hover:bg-brand-600 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed text-white font-medium py-2.5 px-4 rounded-lg text-sm transition-colors flex items-center justify-center gap-2">
           {isLoading ? (
-            <>
-              <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-              Generating text...
-            </>
+            <><svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>Generating text...</>
           ) : (
-            <>
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              Generate text
-            </>
+            <><svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>Generate text</>
           )}
         </button>
       </div>

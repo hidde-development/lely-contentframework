@@ -8,169 +8,156 @@ interface TextPanelProps {
   onElementHover: (rationaleIds: string[] | null) => void;
 }
 
-function isHighlighted(rationaleIds: string[], activeRationaleId: string | null) {
-  return activeRationaleId !== null && rationaleIds.includes(activeRationaleId);
+function isHighlighted(rationaleIds: string[], activeId: string | null) {
+  return activeId !== null && rationaleIds.includes(activeId);
 }
 
-function hoverClass(rationaleIds: string[], activeRationaleId: string | null) {
-  return isHighlighted(rationaleIds, activeRationaleId)
+function hoverCls(rationaleIds: string[], activeId: string | null) {
+  return isHighlighted(rationaleIds, activeId)
     ? "bg-yellow-100 ring-1 ring-yellow-300"
     : "hover:bg-gray-50";
 }
 
-interface ElementProps {
-  el: TextElement;
-  activeRationaleId: string | null;
-  onHover: (ids: string[] | null) => void;
+function bold(text: string) {
+  return text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
 }
 
-function Breadcrumb({ el, activeRationaleId, onHover }: ElementProps) {
-  return (
-    <nav
-      aria-label="Breadcrumb"
-      onMouseEnter={() => onHover(el.rationaleIds)}
-      onMouseLeave={() => onHover(null)}
-      className={`flex items-center gap-1.5 text-xs text-gray-400 mb-4 rounded px-1 -mx-1 cursor-default transition-all ${hoverClass(el.rationaleIds, activeRationaleId)}`}
-    >
-      {el.content.split(">").map((crumb, i, arr) => (
-        <span key={i} className="flex items-center gap-1.5">
-          <span className={i === arr.length - 1 ? "text-gray-600 font-medium" : ""}>{crumb.trim()}</span>
-          {i < arr.length - 1 && <span className="text-gray-300">/</span>}
-        </span>
-      ))}
-    </nav>
-  );
-}
+// ── Individual renderers ──────────────────────────────────────────────────────
 
-function EEATBlock({ el, activeRationaleId, onHover }: ElementProps) {
-  const author = el.meta?.author ?? "Unknown author";
-  const published = el.meta?.published ?? "";
-  const updated = el.meta?.updated ?? "";
+function MetaBlock({ elements, activeId, onHover }: { elements: TextElement[]; activeId: string | null; onHover: (ids: string[] | null) => void }) {
+  const titleEl = elements.find((e) => e.type === "meta_title");
+  const descEl = elements.find((e) => e.type === "meta_desc");
+
+  if (!titleEl && !descEl) return null;
+
+  function charColor(len: number, max: number) {
+    if (len > max) return "text-red-600 font-semibold";
+    if (len > max * 0.9) return "text-amber-600";
+    return "text-green-600";
+  }
 
   return (
-    <div
-      onMouseEnter={() => onHover(el.rationaleIds)}
-      onMouseLeave={() => onHover(null)}
-      className={`flex items-center gap-3 my-4 py-3 px-4 rounded-xl border border-gray-100 bg-gray-50 cursor-default transition-all ${hoverClass(el.rationaleIds, activeRationaleId)}`}
-    >
-      <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
-        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    <div className="mb-8 rounded-xl border border-gray-200 overflow-hidden">
+      <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
+        <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
+        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">SEO metadata</span>
       </div>
-      <div>
-        <p className="text-xs font-semibold text-gray-700">{author}</p>
-        <p className="text-xs text-gray-400">
-          {published && <>Published: <time dateTime={published}>{published}</time></>}
-          {updated && published && " · "}
-          {updated && <>Updated: <time dateTime={updated}>{updated}</time></>}
-        </p>
-      </div>
-      <div className="ml-auto flex items-center gap-1 text-xs text-green-600 font-medium">
-        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-        </svg>
-        E-E-A-T
+      <div className="divide-y divide-gray-100">
+        {titleEl && (
+          <div onMouseEnter={() => onHover(titleEl.rationaleIds)} onMouseLeave={() => onHover(null)}
+            className={`px-4 py-3 cursor-default transition-all ${hoverCls(titleEl.rationaleIds, activeId)}`}>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-medium text-gray-400">Meta title</span>
+              <span className={`text-xs tabular-nums ${charColor(titleEl.content.length, 65)}`}>
+                {titleEl.content.length}/65
+              </span>
+            </div>
+            <p className="text-sm font-medium text-gray-800">{titleEl.content}</p>
+          </div>
+        )}
+        {descEl && (
+          <div onMouseEnter={() => onHover(descEl.rationaleIds)} onMouseLeave={() => onHover(null)}
+            className={`px-4 py-3 cursor-default transition-all ${hoverCls(descEl.rationaleIds, activeId)}`}>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-medium text-gray-400">Meta description</span>
+              <span className={`text-xs tabular-nums ${charColor(descEl.content.length, 155)}`}>
+                {descEl.content.length}/155
+              </span>
+            </div>
+            <p className="text-sm text-gray-600 leading-relaxed">{descEl.content}</p>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function KeyTakeawaysBlock({ items, activeRationaleId, onHover }: { items: TextElement[]; activeRationaleId: string | null; onHover: (ids: string[] | null) => void }) {
+function CmsLabel({ el, activeId, onHover }: { el: TextElement; activeId: string | null; onHover: (ids: string[] | null) => void }) {
   return (
-    <div className="my-6 rounded-xl border border-blue-100 bg-blue-50 p-5">
-      <div className="flex items-center gap-2 mb-3">
-        <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <span className="text-xs font-semibold text-blue-700 uppercase tracking-wider">Key Takeaways</span>
-      </div>
-      <ul className="space-y-2">
-        {items.map((el) => (
-          <li
-            key={el.id}
-            onMouseEnter={() => onHover(el.rationaleIds)}
-            onMouseLeave={() => onHover(null)}
-            className={`flex items-start gap-2.5 text-sm text-blue-900 rounded-lg px-2 py-1 cursor-default transition-all ${hoverClass(el.rationaleIds, activeRationaleId)}`}
-          >
-            <svg className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            <span dangerouslySetInnerHTML={{ __html: el.content.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") }} />
-          </li>
-        ))}
-      </ul>
+    <div onMouseEnter={() => onHover(el.rationaleIds)} onMouseLeave={() => onHover(null)}
+      className={`inline-flex items-center gap-1.5 mb-2 cursor-default transition-all rounded px-1 -mx-1 ${hoverCls(el.rationaleIds, activeId)}`}>
+      <span className="text-xs font-bold tracking-widest text-gray-400 uppercase">{el.content}</span>
+      <span className="text-xs bg-amber-100 text-amber-700 border border-amber-200 rounded px-1.5 py-0.5 font-medium">CMS label</span>
     </div>
   );
 }
 
-function DataTable({ el, activeRationaleId, onHover }: ElementProps) {
-  if (!el.tableData) return null;
-  const { headers, rows } = el.tableData;
-
+function USPBlock({ items, activeId, onHover }: { items: TextElement[]; activeId: string | null; onHover: (ids: string[] | null) => void }) {
   return (
-    <div
-      onMouseEnter={() => onHover(el.rationaleIds)}
-      onMouseLeave={() => onHover(null)}
-      className={`my-6 rounded-xl overflow-hidden border border-gray-200 cursor-default transition-all ${hoverClass(el.rationaleIds, activeRationaleId)}`}
-    >
-      {el.content && (
-        <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-200">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{el.content}</p>
+    <div className="my-6 grid grid-cols-2 gap-3">
+      {items.map((el) => (
+        <div key={el.id} onMouseEnter={() => onHover(el.rationaleIds)} onMouseLeave={() => onHover(null)}
+          className={`rounded-xl border border-gray-200 p-4 cursor-default transition-all ${hoverCls(el.rationaleIds, activeId)}`}>
+          <h3 className="text-sm font-bold text-gray-900 mb-1">{el.content}</h3>
+          {el.meta?.description && <p className="text-xs text-gray-500 leading-relaxed">{el.meta.description}</p>}
         </div>
-      )}
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              {headers.map((h, i) => (
-                <th key={i} className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-100">
-            {rows.map((row, ri) => (
-              <tr key={ri} className="hover:bg-gray-50">
-                {row.map((cell, ci) => (
-                  <td key={ci} className="px-4 py-3 text-gray-700"
-                    dangerouslySetInnerHTML={{ __html: cell.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") }}
-                  />
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      ))}
+    </div>
+  );
+}
+
+function CTAButton({ el, activeId, onHover }: { el: TextElement; activeId: string | null; onHover: (ids: string[] | null) => void }) {
+  return (
+    <div onMouseEnter={() => onHover(el.rationaleIds)} onMouseLeave={() => onHover(null)}
+      className={`my-3 flex items-center gap-3 cursor-default transition-all rounded-lg px-1 -mx-1 ${hoverCls(el.rationaleIds, activeId)}`}>
+      <span className="inline-flex items-center gap-2 bg-gray-900 text-white text-xs font-medium px-4 py-2 rounded-lg">
+        {el.content}
+      </span>
+      {el.meta?.hint && <span className="text-xs text-gray-400 italic">{el.meta.hint}</span>}
+    </div>
+  );
+}
+
+function PlaceholderBlock({ el, activeId, onHover }: { el: TextElement; activeId: string | null; onHover: (ids: string[] | null) => void }) {
+  return (
+    <div onMouseEnter={() => onHover(el.rationaleIds)} onMouseLeave={() => onHover(null)}
+      className={`my-4 rounded-xl border-2 border-dashed border-amber-300 bg-amber-50 px-5 py-4 cursor-default transition-all ${isHighlighted(el.rationaleIds, activeId) ? "ring-1 ring-yellow-300" : ""}`}>
+      <div className="flex items-start gap-2.5">
+        <svg className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+        </svg>
+        <p className="text-xs text-amber-800 leading-relaxed font-medium">{el.content}</p>
       </div>
     </div>
   );
 }
 
-function FAQSection({ pairs, activeRationaleId, onHover }: { pairs: Array<{ q: TextElement; a: TextElement }>; activeRationaleId: string | null; onHover: (ids: string[] | null) => void }) {
+function RelatedBlogsSection({ items, activeId, onHover }: { items: TextElement[]; activeId: string | null; onHover: (ids: string[] | null) => void }) {
+  return (
+    <div className="my-6">
+      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Related blogs</p>
+      <div className="space-y-2">
+        {items.map((el) => (
+          <div key={el.id} onMouseEnter={() => onHover(el.rationaleIds)} onMouseLeave={() => onHover(null)}
+            className={`rounded-xl border border-gray-200 p-4 cursor-default transition-all ${hoverCls(el.rationaleIds, activeId)}`}>
+            <p className="text-sm font-semibold text-gray-800 mb-1">{el.content}</p>
+            {el.meta?.description && <p className="text-xs text-gray-500 leading-relaxed">{el.meta.description}</p>}
+            <span className="mt-2 inline-flex items-center gap-1 text-xs bg-amber-100 text-amber-700 border border-amber-200 rounded px-1.5 py-0.5 font-medium">
+              CMS placeholder — add actual link
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FAQSection({ pairs, activeId, onHover }: { pairs: Array<{ q: TextElement; a: TextElement }>; activeId: string | null; onHover: (ids: string[] | null) => void }) {
   return (
     <div className="my-8">
-      <h2 className="text-xl font-semibold text-gray-800 mb-4 pb-1 border-b border-gray-200">
-        Frequently Asked Questions
-      </h2>
+      <h2 className="text-xl font-semibold text-gray-800 mb-4 pb-1 border-b border-gray-200">Frequently Asked Questions</h2>
       <div className="space-y-4">
         {pairs.map(({ q, a }, idx) => (
           <div key={idx} className="rounded-xl border border-gray-200 overflow-hidden">
-            <div
-              onMouseEnter={() => onHover(q.rationaleIds)}
-              onMouseLeave={() => onHover(null)}
-              className={`px-4 py-3 bg-gray-50 cursor-default transition-all ${hoverClass(q.rationaleIds, activeRationaleId)}`}
-            >
+            <div onMouseEnter={() => onHover(q.rationaleIds)} onMouseLeave={() => onHover(null)}
+              className={`px-4 py-3 bg-gray-50 cursor-default transition-all ${hoverCls(q.rationaleIds, activeId)}`}>
               <p className="text-sm font-semibold text-gray-800">{q.content}</p>
             </div>
-            <div
-              onMouseEnter={() => onHover(a.rationaleIds)}
-              onMouseLeave={() => onHover(null)}
-              className={`px-4 py-3 bg-white cursor-default transition-all ${hoverClass(a.rationaleIds, activeRationaleId)}`}
-            >
-              <p className="text-sm text-gray-700 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: a.content.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") }}
-              />
+            <div onMouseEnter={() => onHover(a.rationaleIds)} onMouseLeave={() => onHover(null)}
+              className={`px-4 py-3 bg-white cursor-default transition-all ${hoverCls(a.rationaleIds, activeId)}`}>
+              <p className="text-sm text-gray-700 leading-relaxed" dangerouslySetInnerHTML={{ __html: bold(a.content) }} />
             </div>
           </div>
         ))}
@@ -179,31 +166,7 @@ function FAQSection({ pairs, activeRationaleId, onHover }: { pairs: Array<{ q: T
   );
 }
 
-function SourcesSection({ items, activeRationaleId, onHover }: { items: TextElement[]; activeRationaleId: string | null; onHover: (ids: string[] | null) => void }) {
-  return (
-    <div className="my-6 pt-4 border-t border-gray-200">
-      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Sources</p>
-      <ol className="space-y-2 list-decimal list-inside">
-        {items.map((el) => (
-          <li
-            key={el.id}
-            onMouseEnter={() => onHover(el.rationaleIds)}
-            onMouseLeave={() => onHover(null)}
-            className={`text-xs text-gray-500 rounded px-1 cursor-default transition-all ${hoverClass(el.rationaleIds, activeRationaleId)}`}
-          >
-            {el.meta?.url ? (
-              <a href={el.meta.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-                {el.content}
-              </a>
-            ) : (
-              el.content
-            )}
-          </li>
-        ))}
-      </ol>
-    </div>
-  );
-}
+// ── Main component ────────────────────────────────────────────────────────────
 
 export default function TextPanel({ elements, activeRationaleId, onElementHover }: TextPanelProps) {
   if (elements.length === 0) {
@@ -216,96 +179,71 @@ export default function TextPanel({ elements, activeRationaleId, onElementHover 
             </svg>
           </div>
           <h3 className="text-base font-semibold text-gray-700 mb-2">No text generated yet</h3>
-          <p className="text-sm text-gray-400">
-            Fill in the fields on the left and click &ldquo;Generate text&rdquo; to get started.
-          </p>
+          <p className="text-sm text-gray-400">Fill in the fields on the left and click &ldquo;Generate text&rdquo; to get started.</p>
         </div>
       </main>
     );
   }
 
-  const keytakeaways = elements.filter((e) => e.type === "keytakeaway");
+  // Pre-collect grouped types
+  const metaElements = elements.filter((e) => e.type === "meta_title" || e.type === "meta_desc");
+  const uspItems = elements.filter((e) => e.type === "usp");
   const faq_qs = elements.filter((e) => e.type === "faq_q");
   const faq_as = elements.filter((e) => e.type === "faq_a");
-  const sources = elements.filter((e) => e.type === "source");
+  const blogItems = elements.filter((e) => e.type === "related_blog");
   const faqPairs = faq_qs.map((q, i) => ({ q, a: faq_as[i] })).filter((p) => p.a);
 
-  type GroupedItem =
+  // Group li into ul
+  type Grouped =
     | TextElement
     | { type: "ul"; items: TextElement[] }
-    | { type: "keytakeaways_block"; items: TextElement[] }
-    | { type: "faq_block"; pairs: Array<{ q: TextElement; a: TextElement }> }
-    | { type: "sources_block"; items: TextElement[] };
+    | { type: "_usp_block"; items: TextElement[] }
+    | { type: "_faq_block"; pairs: Array<{ q: TextElement; a: TextElement }> }
+    | { type: "_blogs_block"; items: TextElement[] };
 
-  const grouped: GroupedItem[] = [];
+  const grouped: Grouped[] = [];
   let currentList: TextElement[] | null = null;
-  let keytakeawaysAdded = false;
-  let faqAdded = false;
-  let sourcesAdded = false;
+  let uspAdded = false, faqAdded = false, blogsAdded = false;
 
   for (const el of elements) {
     if (el.type === "faq_a") continue;
+    // Meta elements rendered separately in MetaBlock
+    if (el.type === "meta_title" || el.type === "meta_desc") continue;
 
-    if (el.type === "keytakeaway") {
+    if (el.type === "usp") {
       currentList = null;
-      if (!keytakeawaysAdded) {
-        grouped.push({ type: "keytakeaways_block", items: keytakeaways });
-        keytakeawaysAdded = true;
-      }
+      if (!uspAdded) { grouped.push({ type: "_usp_block", items: uspItems }); uspAdded = true; }
       continue;
     }
-
     if (el.type === "faq_q") {
       currentList = null;
-      if (!faqAdded) {
-        grouped.push({ type: "faq_block", pairs: faqPairs });
-        faqAdded = true;
-      }
+      if (!faqAdded) { grouped.push({ type: "_faq_block", pairs: faqPairs }); faqAdded = true; }
       continue;
     }
-
-    if (el.type === "source") {
+    if (el.type === "related_blog") {
       currentList = null;
-      if (!sourcesAdded) {
-        grouped.push({ type: "sources_block", items: sources });
-        sourcesAdded = true;
-      }
+      if (!blogsAdded) { grouped.push({ type: "_blogs_block", items: blogItems }); blogsAdded = true; }
       continue;
     }
-
     if (el.type === "li") {
-      if (!currentList) {
-        currentList = [];
-        grouped.push({ type: "ul", items: currentList });
-      }
+      if (!currentList) { currentList = []; grouped.push({ type: "ul", items: currentList }); }
       currentList.push(el);
       continue;
     }
-
     currentList = null;
     grouped.push(el);
   }
 
-  const headingClass: Record<string, string> = {
-    h1: "text-2xl font-bold text-gray-900 mt-6 mb-3",
-    h2: "text-xl font-semibold text-gray-800 mt-8 mb-2 pb-1 border-b border-gray-200",
-    h3: "text-base font-semibold text-gray-700 mt-5 mb-1.5",
-  };
-
   return (
     <main className="flex-1 bg-white border-r border-gray-200 h-full overflow-hidden flex flex-col">
+      {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-green-500"></div>
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Generated text</h2>
         </div>
-        <button
-          onClick={() => {
-            const text = elements.map((el) => el.content).join("\n\n");
-            navigator.clipboard.writeText(text);
-          }}
-          className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 transition-colors"
-        >
+        <button onClick={() => { const text = elements.map((el) => el.content).join("\n\n"); navigator.clipboard.writeText(text); }}
+          className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 transition-colors">
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
           </svg>
@@ -313,62 +251,57 @@ export default function TextPanel({ elements, activeRationaleId, onElementHover 
         </button>
       </div>
 
+      {/* Content */}
       <div className="flex-1 overflow-y-auto px-8 py-6">
         <div className="max-w-2xl mx-auto">
+          <MetaBlock elements={metaElements} activeId={activeRationaleId} onHover={onElementHover} />
           {grouped.map((item, idx) => {
-            if ("type" in item && item.type === "keytakeaways_block") {
-              return <KeyTakeawaysBlock key={idx} items={item.items} activeRationaleId={activeRationaleId} onHover={onElementHover} />;
-            }
-            if ("type" in item && item.type === "faq_block") {
-              return <FAQSection key={idx} pairs={item.pairs} activeRationaleId={activeRationaleId} onHover={onElementHover} />;
-            }
-            if ("type" in item && item.type === "sources_block") {
-              return <SourcesSection key={idx} items={item.items} activeRationaleId={activeRationaleId} onHover={onElementHover} />;
-            }
+            // Grouped blocks
+            if ("type" in item && item.type === "_usp_block")
+              return <USPBlock key={idx} items={item.items} activeId={activeRationaleId} onHover={onElementHover} />;
+            if ("type" in item && item.type === "_faq_block")
+              return <FAQSection key={idx} pairs={item.pairs} activeId={activeRationaleId} onHover={onElementHover} />;
+            if ("type" in item && item.type === "_blogs_block")
+              return <RelatedBlogsSection key={idx} items={item.items} activeId={activeRationaleId} onHover={onElementHover} />;
 
+            // Li list
             if ("type" in item && item.type === "ul") {
               return (
                 <ul key={idx} className="list-disc list-inside space-y-1 my-3 ml-2">
                   {item.items.map((li) => (
-                    <li
-                      key={li.id}
-                      onMouseEnter={() => onElementHover(li.rationaleIds)}
-                      onMouseLeave={() => onElementHover(null)}
-                      className={`text-sm text-gray-700 leading-relaxed rounded px-1 cursor-default transition-all ${hoverClass(li.rationaleIds, activeRationaleId)}`}
-                      dangerouslySetInnerHTML={{ __html: li.content.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") }}
-                    />
+                    <li key={li.id} onMouseEnter={() => onElementHover(li.rationaleIds)} onMouseLeave={() => onElementHover(null)}
+                      className={`text-sm text-gray-700 leading-relaxed rounded px-1 cursor-default transition-all ${hoverCls(li.rationaleIds, activeRationaleId)}`}
+                      dangerouslySetInnerHTML={{ __html: bold(li.content) }} />
                   ))}
                 </ul>
               );
             }
 
+            // Individual elements
             const el = item as TextElement;
 
-            if (el.type === "breadcrumb") return <Breadcrumb key={el.id} el={el} activeRationaleId={activeRationaleId} onHover={onElementHover} />;
-            if (el.type === "eeat") return <EEATBlock key={el.id} el={el} activeRationaleId={activeRationaleId} onHover={onElementHover} />;
-            if (el.type === "table") return <DataTable key={el.id} el={el} activeRationaleId={activeRationaleId} onHover={onElementHover} />;
+            if (el.type === "label")
+              return <CmsLabel key={el.id} el={el} activeId={activeRationaleId} onHover={onElementHover} />;
+            if (el.type === "cta")
+              return <CTAButton key={el.id} el={el} activeId={activeRationaleId} onHover={onElementHover} />;
+            if (el.type === "placeholder")
+              return <PlaceholderBlock key={el.id} el={el} activeId={activeRationaleId} onHover={onElementHover} />;
 
             if (el.type === "h1" || el.type === "h2" || el.type === "h3") {
               const Tag = el.type as "h1" | "h2" | "h3";
+              const cls = { h1: "text-2xl font-bold text-gray-900 mt-4 mb-2", h2: "text-xl font-semibold text-gray-800 mt-8 mb-2 pb-1 border-b border-gray-200", h3: "text-base font-semibold text-gray-700 mt-5 mb-1.5" }[el.type];
               return (
-                <Tag
-                  key={el.id}
-                  onMouseEnter={() => onElementHover(el.rationaleIds)}
-                  onMouseLeave={() => onElementHover(null)}
-                  className={`${headingClass[el.type]} rounded px-1 -mx-1 cursor-default transition-all ${hoverClass(el.rationaleIds, activeRationaleId)}`}
-                  dangerouslySetInnerHTML={{ __html: el.content.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") }}
-                />
+                <Tag key={el.id} onMouseEnter={() => onElementHover(el.rationaleIds)} onMouseLeave={() => onElementHover(null)}
+                  className={`${cls} rounded px-1 -mx-1 cursor-default transition-all ${hoverCls(el.rationaleIds, activeRationaleId)}`}
+                  dangerouslySetInnerHTML={{ __html: bold(el.content) }} />
               );
             }
 
+            // p / default
             return (
-              <p
-                key={el.id}
-                onMouseEnter={() => onElementHover(el.rationaleIds)}
-                onMouseLeave={() => onElementHover(null)}
-                className={`${el.type === "intro" ? "text-base font-medium" : "text-sm"} text-gray-700 leading-relaxed my-3 rounded px-1 -mx-1 cursor-default transition-all ${hoverClass(el.rationaleIds, activeRationaleId)}`}
-                dangerouslySetInnerHTML={{ __html: el.content.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") }}
-              />
+              <p key={el.id} onMouseEnter={() => onElementHover(el.rationaleIds)} onMouseLeave={() => onElementHover(null)}
+                className={`text-sm text-gray-700 leading-relaxed my-3 rounded px-1 -mx-1 cursor-default transition-all ${hoverCls(el.rationaleIds, activeRationaleId)}`}
+                dangerouslySetInnerHTML={{ __html: bold(el.content) }} />
             );
           })}
         </div>
