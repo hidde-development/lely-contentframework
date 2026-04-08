@@ -4,9 +4,9 @@ import type { GenerateInput, GeneratedContent } from "@/lib/types";
 
 // Supports multiple common Vercel env var names for the Anthropic API key
 const apiKey =
+  process.env.Claude ||
   process.env.ANTHROPIC_API_KEY ||
-  process.env.CLAUDE_API_KEY ||
-  process.env.CLAUDE;
+  process.env.CLAUDE_API_KEY;
 
 const client = new Anthropic({ apiKey });
 
