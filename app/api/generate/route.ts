@@ -168,7 +168,9 @@ Geef je antwoord UITSLUITEND als geldig JSON zonder markdown code blocks. Gebrui
 Geldige types voor tekstelementen: breadcrumb, h1, h2, h3, p, li, intro, eeat, keytakeaway, table, faq_q, faq_a, source
 Geldige types voor rationale: seo, geo, both
 Geldige modules voor rationale: A, B, C, D, E, F, G, H, I
-Zorg voor minimaal 18 en maximaal 35 rationale-items. Elk tekstelement heeft minimaal één rationaleId.`;
+Zorg voor minimaal 18 en maximaal 35 rationale-items. Elk tekstelement heeft minimaal één rationaleId.
+
+BELANGRIJK: Schrijf alle "element" en "explanation" velden in de rationale-array in het Engels (British English).`;
 
 export async function POST(request: NextRequest) {
   const input: GenerateInput = await request.json();
