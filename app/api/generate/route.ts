@@ -195,35 +195,70 @@ Valid text element types: meta_title, meta_desc, h1, h2, h3, p, li, label, usp, 
 Valid rationale types: seo, geo, both, tov, brand
 Valid modules: META, HERO, INTRO, USP, BODY, TESTIMONIAL, CTA, FAQ, BLOGS, PRODUCTS`;
 
+const RATIONALE_SYSTEM_PROMPT = `You are an SEO/GEO analyst and Lely brand expert. You will receive a structured array of page content elements (JSON). Your task is to write rationale for each element, explaining its contribution to search visibility and brand quality.
+
+Rationale types:
+- seo: contributes to traditional search engine visibility (keywords, structure, headings, etc.)
+- geo: contributes to AI search visibility (direct answers, facts, structured data, W-questions)
+- both: contributes to both SEO and GEO
+- tov: demonstrates one of the four Lely Tone of Voice elements (Bright / Optimistic / Creative / Supportive) — always name which element applies
+- brand: authentic use of Lely brand identity, products, or pay-offs
+
+Template modules: META, HERO, INTRO, USP, BODY, TESTIMONIAL, CTA, FAQ, BLOGS, PRODUCTS
+
+Rules:
+- Generate 15–25 rationale items total
+- Every element id must appear in at least one rationaleId
+- Write all explanations in British English
+- Always include at least one E-E-A-T rationale item (module: INTRO) reminding the user to configure author/date fields in the CMS
+- Always include at least two tov items and one brand item
+
+Respond ONLY with valid JSON, no markdown. Format:
+{
+  "rationale": [
+    {
+      "id": "r1",
+      "type": "seo",
+      "module": "HERO",
+      "element": "H1 heading",
+      "explanation": "The H1 contains the primary keyword 'grazing management' near the start, signalling the page's main topic to search engine crawlers."
+    }
+  ]
+}`;
+
+function parseJSON<T>(text: string): T {
+  try {
+    return JSON.parse(text);
+  } catch {
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error("No valid JSON found in response");
+    return JSON.parse(match[0]);
+  }
+}
+
 export async function POST(request: NextRequest) {
   const input: GenerateInput = await request.json();
 
   // Build keyword context with volumes
   const keywordContext = input.keywords && input.keywords.length > 0
-    ? input.keywords
-        .map((k) => {
-          const vol = k.volume !== null ? ` (${k.volume.toLocaleString("en-GB")} searches/mo)` : "";
-          const tag = k.isPrimary ? " ← PRIMARY" : "";
-          return `- ${k.keyword}${vol}${tag}`;
-        })
-        .join("\n")
+    ? input.keywords.map((k) => {
+        const vol = k.volume !== null ? ` (${k.volume.toLocaleString("en-GB")} searches/mo)` : "";
+        const tag = k.isPrimary ? " ← PRIMARY" : "";
+        return `- ${k.keyword}${vol}${tag}`;
+      }).join("\n")
     : `- ${input.mainKeyword} ← PRIMARY${input.subKeywords ? "\n" + input.subKeywords.split(",").map((k) => `- ${k.trim()}`).join("\n") : ""}`;
 
-  // Build product context
   const productContext = input.products && input.products.length > 0
-    ? input.products
-        .map((p) => `- **${p.name}**${p.description ? `: ${p.description}` : ""}`)
-        .join("\n")
+    ? input.products.map((p) => `- **${p.name}**${p.description ? `: ${p.description}` : ""}`).join("\n")
     : "No specific products provided — use your knowledge of Lely products relevant to the topic.";
 
-  const userPrompt = `Generate a fully structured Lely CMS page following all 11 template blocks in order.
+  const textPrompt = `Generate a fully structured Lely CMS page following all 11 template blocks in order.
 
 **Topic:** ${input.topic}
-
 **Keywords (with monthly search volumes):**
 ${keywordContext}
 
-Use the primary keyword in the H1, introduction and distributed throughout. Place secondary keywords in H2/H3 headings weighted by search volume — higher volume = more prominent placement.
+Use the primary keyword in the H1, introduction and distributed throughout. Place secondary keywords in H2/H3 headings weighted by search volume.
 
 **Products to feature in the Natural CTA section (Block 8):**
 ${productContext}
@@ -231,33 +266,43 @@ ${productContext}
 **Additional instructions:** ${input.instructions || "None"}
 **Questions to answer (use in FAQ and/or body text):** ${input.questions || "None provided"}
 
-Include rationale for SEO, GEO, tone of voice (tov) and brand identity (brand) across all blocks. Flag every E-E-A-T consideration with a note that the CMS author/date fields must be filled in.`;
+For each text element, include a "rationaleIds" array with placeholder IDs (e.g. ["r1"], ["r2", "r3"]) — these will be filled in by the rationale step. Assign IDs sequentially starting from r1, and make sure related elements share IDs where appropriate.`;
 
   try {
-    const message = await client.messages.create({
+    // ── Call 1: generate text content ──────────────────────────────────────
+    const textMessage = await client.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 8192,
-      messages: [{ role: "user", content: userPrompt }],
+      max_tokens: 6000,
+      messages: [{ role: "user", content: textPrompt }],
       system: SYSTEM_PROMPT,
     });
 
-    const rawContent = message.content[0];
-    if (rawContent.type !== "text") {
+    if (textMessage.content[0].type !== "text") {
       return NextResponse.json({ error: "Unexpected response from Claude" }, { status: 500 });
     }
 
-    let parsed: GeneratedContent;
-    try {
-      parsed = JSON.parse(rawContent.text);
-    } catch {
-      const jsonMatch = rawContent.text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        return NextResponse.json({ error: "Could not parse the generated content" }, { status: 500 });
-      }
-      parsed = JSON.parse(jsonMatch[0]);
+    const textData = parseJSON<{ text: GeneratedContent["text"] }>(textMessage.content[0].text);
+
+    // ── Call 2: generate rationale for the text ────────────────────────────
+    const rationalePrompt = `Here are the page content elements. Generate rationale for each element ID that appears in their rationaleIds arrays.
+
+${JSON.stringify(textData.text, null, 2)}`;
+
+    const rationaleMessage = await client.messages.create({
+      model: "claude-sonnet-4-6",
+      max_tokens: 3000,
+      messages: [{ role: "user", content: rationalePrompt }],
+      system: RATIONALE_SYSTEM_PROMPT,
+    });
+
+    if (rationaleMessage.content[0].type !== "text") {
+      return NextResponse.json({ error: "Unexpected response from rationale step" }, { status: 500 });
     }
 
-    return NextResponse.json(parsed);
+    const rationaleData = parseJSON<{ rationale: GeneratedContent["rationale"] }>(rationaleMessage.content[0].text);
+
+    return NextResponse.json({ text: textData.text, rationale: rationaleData.rationale });
+
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error("Claude API error:", message);
