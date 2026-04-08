@@ -1,0 +1,117 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import InputPanel from "@/components/InputPanel";
+import TextPanel from "@/components/TextPanel";
+import RationalePanel from "@/components/RationalePanel";
+import type { GenerateInput, GeneratedContent } from "@/lib/types";
+
+export default function Home() {
+  const [content, setContent] = useState<GeneratedContent | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Two-way hover linking between text and rationale
+  const [hoveredRationaleIds, setHoveredRationaleIds] = useState<string[]>([]);
+  const [activeRationaleId, setActiveRationaleId] = useState<string | null>(null);
+
+  const router = useRouter();
+
+  async function handleGenerate(input: GenerateInput) {
+    setIsLoading(true);
+    setError(null);
+    setContent(null);
+    setHoveredRationaleIds([]);
+    setActiveRationaleId(null);
+
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Genereren mislukt");
+      }
+
+      const data: GeneratedContent = await res.json();
+      setContent(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Er is een fout opgetreden");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/login");
+  }
+
+  // When hovering a text element, highlight its rationale items
+  function handleElementHover(rationaleIds: string[] | null) {
+    setHoveredRationaleIds(rationaleIds ?? []);
+    setActiveRationaleId(null);
+  }
+
+  // When hovering a rationale item, highlight it (text panel checks if its rationaleIds includes this)
+  function handleItemHover(id: string | null) {
+    setActiveRationaleId(id);
+    setHoveredRationaleIds([]);
+  }
+
+  return (
+    <div className="h-full flex flex-col bg-white">
+      {/* Top bar */}
+      <header className="shrink-0 h-12 bg-gray-900 border-b border-gray-700 flex items-center px-4 gap-3">
+        <div className="flex items-center gap-2">
+          <div className="w-5 h-5 rounded bg-brand-500 flex items-center justify-center">
+            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <span className="text-sm font-semibold text-white">GEO & SEO Tekstgenerator</span>
+        </div>
+
+        {error && (
+          <div className="flex-1 mx-4 bg-red-900/40 border border-red-700 rounded-lg px-3 py-1.5 flex items-center gap-2">
+            <svg className="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-xs text-red-300">{error}</span>
+          </div>
+        )}
+
+        <div className="ml-auto">
+          <button
+            onClick={handleLogout}
+            className="text-xs text-gray-400 hover:text-gray-200 flex items-center gap-1.5 transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Uitloggen
+          </button>
+        </div>
+      </header>
+
+      {/* Three-panel layout */}
+      <div className="flex-1 flex overflow-hidden">
+        <InputPanel onGenerate={handleGenerate} isLoading={isLoading} />
+        <TextPanel
+          elements={content?.text ?? []}
+          activeRationaleId={activeRationaleId}
+          onElementHover={handleElementHover}
+        />
+        <RationalePanel
+          items={content?.rationale ?? []}
+          highlightedIds={hoveredRationaleIds}
+          onItemHover={handleItemHover}
+        />
+      </div>
+    </div>
+  );
+}
