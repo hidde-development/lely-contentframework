@@ -402,4 +402,40 @@ export const PRODUCT_CATALOG: CatalogCategory[] = [
       },
     ],
   },
+  {
+    id: "software",
+    name: "Software",
+    description:
+      "Lely's farm management software transforms data from your herd and robots into actionable insights, helping you make better decisions and optimise your farm around the clock.",
+    products: [
+      {
+        id: "horizon",
+        name: "Lely Horizon",
+        description:
+          "Digital farm management platform that acts as a counterpart to you, your farm and your Lely devices. Works around the clock as an extra set of eyes to monitor your herd, your robots and their sensors, identifying situations that need attention so you can intervene in a timely manner.",
+        usps: [
+          {
+            title: "Decision support",
+            description:
+              "Collects, analyses and interprets your data to simplify decision-making and help you manage your farm more effectively.",
+          },
+          {
+            title: "User-friendly",
+            description:
+              "Collects an abundance of in-depth data points about your robots and cows and converts them into easily digestible information that helps you optimise your farm.",
+          },
+          {
+            title: "Improved workflow",
+            description:
+              "Delivers valuable insights at the right time and place, helping save time by providing extra support in your daily routines.",
+          },
+          {
+            title: "Connected",
+            description:
+              "Combines individual cow data from your Lely equipment with selected third-party information into one single app. You decide how and with whom to share your data.",
+          },
+        ],
+      },
+    ],
+  },
 ];
