@@ -215,4 +215,91 @@ export const PRODUCT_CATALOG: CatalogCategory[] = [
       },
     ],
   },
+  {
+    id: "manure",
+    name: "Manure",
+    description:
+      "Our manure solutions maintain barn hygiene and create a comfortable environment contributing to optimal cow health. They also help create a pleasant working environment and reduce time-consuming, repetitive labour, allowing you to devote your time to cow care.",
+    products: [
+      {
+        id: "discovery-collector",
+        name: "Lely Discovery Collector",
+        description:
+          "Revolutionary manure robot that collects manure instead of scraping it, making manure build-up a thing of the past. Ensures less manure in cubicles, resulting in cleaner hooves, tails and udders, which can help reduce infections and optimise cow health. Compact and cable-free, it navigates autonomously to reach almost all areas of the barn.",
+        usps: [
+          {
+            title: "Low hindrance",
+            description:
+              "Compactly designed with no cables or gutters required, providing easy navigation and a safer living environment for cows.",
+          },
+          {
+            title: "Clean and safe",
+            description:
+              "Sprays water from the front for improved manure collection and from the back to wet the floor for additional grip, contributing to a clean and safe environment.",
+          },
+          {
+            title: "Easy navigation",
+            description:
+              "Built-in sensors allow the Collector to navigate in tight spaces, small corners, under sorting gates, through cross alleys and in front of the automatic milking system.",
+          },
+          {
+            title: "Flexible cleaning",
+            description:
+              "Routes and cleaning frequency can be set to match your or the cows' daily rhythm. Programme settings are easily adjusted via mobile phone.",
+          },
+        ],
+      },
+      {
+        id: "discovery-scraper",
+        name: "Lely Discovery Scraper",
+        description:
+          "The original manure robot with nearly 20 years of experience and continued development. A reliable cleaning companion that autonomously scrapes manure day and night, maintaining optimal barn hygiene while cows are undisturbed.",
+        usps: [
+          {
+            title: "Time saver",
+            description:
+              "Takes the daily task of manure-scraping out of your hands. Smart design enables it to reach every corner of the barn for optimal barn hygiene.",
+          },
+          {
+            title: "Optimal hygiene",
+            description:
+              "Keeps the barn clean and hygienic to help prevent hoof problems, keep tails and udders clean and allow cows to behave more naturally.",
+          },
+          {
+            title: "Flexible cleaning",
+            description:
+              "Removes manure day and night without disturbing the cows. Route and schedule are fully controllable to fit your and the cows' daily rhythm.",
+          },
+          {
+            title: "Smart design",
+            description:
+              "Uses sensors to autonomously follow pre-programmed routes. Compact size allows easy navigation below sorting gates, between cows and from one alley to another.",
+          },
+        ],
+      },
+      {
+        id: "sphere",
+        name: "Lely Sphere",
+        description:
+          "Circular manure handling system that separates mineral streams and creates value from emissions. Separates faeces and urine and converts nitrogen emissions into a valuable liquid fertiliser for precision fertilisation, improving mineral cycles and barn climate.",
+        usps: [
+          {
+            title: "Optimal fertilisation",
+            description:
+              "Separates three mineral streams for precision fertilisation, allowing each type of fertiliser to be used exactly where and when it is needed for optimal soil and crop nutrition.",
+          },
+          {
+            title: "Capture and convert",
+            description:
+              "Independent measurements show Lely Sphere can reduce ammonia emissions in the barn by up to 77% on average and provide up to 15 kg of nitrogen annually as circular, liquid fertiliser.",
+          },
+          {
+            title: "Safer barn climate",
+            description:
+              "Reduces ammonia in the barn for a healthier, safer climate. Combined with the Discovery Collector cleaning the floor every two hours on average, it helps reduce hygiene-related hoof and udder health problems.",
+          },
+        ],
+      },
+    ],
+  },
 ];
