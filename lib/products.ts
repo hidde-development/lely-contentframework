@@ -128,4 +128,91 @@ export const PRODUCT_CATALOG: CatalogCategory[] = [
       },
     ],
   },
+  {
+    id: "feeding",
+    name: "Feeding",
+    description:
+      "More frequent automatic feeding and feed pushing can have a positive effect on labour, animal health, fertility, production and finances. Our automatic feeding solutions tackle frequent feeding and feed pushing to improve feed intake, which can result in healthier cows and more efficient production.",
+    products: [
+      {
+        id: "vector",
+        name: "Lely Vector",
+        description:
+          "Automatic feeding system that provides every animal group access to fresh, precisely mixed rations based on their needs. Consists of a mixing and feeding robot and a feed kitchen where feed is stored, selected and loaded. The pushing technology on two sides keeps feed always within reach, enabling an enhanced feeding strategy that can lead to improved milk yields and healthier cows.",
+        usps: [
+          {
+            title: "Saving time and cost",
+            description:
+              "Frees up time for other farm tasks and can reduce rest feed. Reduces fuel consumption and substitutes other feeding machinery, which can lead to energy and cost savings.",
+          },
+          {
+            title: "Frequent feeding",
+            description:
+              "The battery-operated mixing and feeding robot provides frequent feeding, which can positively impact rumen health, fertility and milk production.",
+          },
+          {
+            title: "Precision feeding",
+            description:
+              "The feed kitchen and feed grabber provide accurate, precise rations tailored to each group, helping every animal group receive the proper nutrients for better health and growth.",
+          },
+          {
+            title: "Flexible",
+            description:
+              "Suitable for almost all feed types and barn layouts, giving more flexibility in when to spend time on feeding.",
+          },
+        ],
+      },
+      {
+        id: "juno",
+        name: "Lely Juno",
+        description:
+          "Automatic feed pusher that relieves the work of pushing feed multiple times a day. By pushing feed regularly, it keeps roughage within the cows' reach for optimal rumen health and overall production.",
+        usps: [
+          {
+            title: "Frequent feeding",
+            description:
+              "Increasing feed pushing frequency stimulates frequent feed consumption, while higher feed intake may improve cow health.",
+          },
+          {
+            title: "Automated feed pushing",
+            description:
+              "Helps maintain a clean feed alley, reduce fuel usage and free up time to focus on other farming activities.",
+          },
+          {
+            title: "Dynamic feeding",
+            description:
+              "Adapts to the amount of feed along the feed fence for a more equal distribution, maintaining feed quality, reducing energy costs and preventing wear and tear.",
+          },
+          {
+            title: "Flexible options",
+            description:
+              "Can be equipped with a smart skirt lifter, electric bumper protection, LED light and barn door control box. The Flex package includes all options except the barn door control box.",
+          },
+        ],
+      },
+      {
+        id: "calm",
+        name: "Lely Calm",
+        description:
+          "Automatic calf feeder that helps dairy farmers achieve optimal growth and development from calf to cow through precise feeding, optimal hygiene and reduced labour. Delivers more flexibility in daily routine and supports better milk yields when calves mature into dairy cows.",
+        usps: [
+          {
+            title: "Strong start",
+            description:
+              "Calves receive unlimited milk for the first 35 days of life, followed by a gradual reduction to promote roughage and concentrate intake, contributing to rumen health, cow vitality, fertility and milk yield.",
+          },
+          {
+            title: "Optimal hygiene",
+            description:
+              "The HygieneBox delivers an automated two-step cleaning process: the teat is cleaned with fresh water after every feed, then the system interior is cleaned with water and detergents.",
+          },
+          {
+            title: "Easy use",
+            description:
+              "Automates the daily routine of calf feeding and provides valuable insight through CalfApp and CalfCloud.",
+          },
+        ],
+      },
+    ],
+  },
 ];
