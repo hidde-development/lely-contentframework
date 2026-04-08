@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import InputPanel from "@/components/InputPanel";
 import TextPanel from "@/components/TextPanel";
 import RationalePanel from "@/components/RationalePanel";
@@ -12,11 +11,8 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Two-way hover linking between text and rationale
   const [hoveredRationaleIds, setHoveredRationaleIds] = useState<string[]>([]);
   const [activeRationaleId, setActiveRationaleId] = useState<string | null>(null);
-
-  const router = useRouter();
 
   async function handleGenerate(input: GenerateInput) {
     setIsLoading(true);
@@ -46,18 +42,11 @@ export default function Home() {
     }
   }
 
-  async function handleLogout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
-  }
-
-  // When hovering a text element, highlight its rationale items
   function handleElementHover(rationaleIds: string[] | null) {
     setHoveredRationaleIds(rationaleIds ?? []);
     setActiveRationaleId(null);
   }
 
-  // When hovering a rationale item, highlight it (text panel checks if its rationaleIds includes this)
   function handleItemHover(id: string | null) {
     setActiveRationaleId(id);
     setHoveredRationaleIds([]);
@@ -84,18 +73,6 @@ export default function Home() {
             <span className="text-xs text-red-300">{error}</span>
           </div>
         )}
-
-        <div className="ml-auto">
-          <button
-            onClick={handleLogout}
-            className="text-xs text-gray-400 hover:text-gray-200 flex items-center gap-1.5 transition-colors"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Uitloggen
-          </button>
-        </div>
       </header>
 
       {/* Three-panel layout */}
