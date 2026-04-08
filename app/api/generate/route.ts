@@ -294,13 +294,13 @@ Keep answers and paragraphs concise. ${rationaleIdNote}`;
     const [msg1, msg2] = await Promise.all([
       client.messages.create({
         model: "claude-sonnet-4-6",
-        max_tokens: 4000,
+        max_tokens: 16000,
         messages: [{ role: "user", content: prompt1 }],
         system: SYSTEM_PROMPT,
       }),
       client.messages.create({
         model: "claude-sonnet-4-6",
-        max_tokens: 4000,
+        max_tokens: 16000,
         messages: [{ role: "user", content: prompt2 }],
         system: SYSTEM_PROMPT,
       }),
@@ -321,7 +321,7 @@ ${JSON.stringify(allText, null, 2)}`;
 
     const msg3 = await client.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 3000,
+      max_tokens: 8000,
       messages: [{ role: "user", content: rationalePrompt }],
       system: RATIONALE_SYSTEM_PROMPT,
     });
