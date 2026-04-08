@@ -252,56 +252,87 @@ export async function POST(request: NextRequest) {
     ? input.products.map((p) => `- **${p.name}**${p.description ? `: ${p.description}` : ""}`).join("\n")
     : "No specific products provided — use your knowledge of Lely products relevant to the topic.";
 
-  const textPrompt = `Generate a fully structured Lely CMS page following all 11 template blocks in order.
+  const sharedContext = `Topic: ${input.topic}
+Keywords: ${keywordContext}
+Products: ${productContext}
+Additional instructions: ${input.instructions || "None"}
+Questions to answer: ${input.questions || "None"}`;
 
-**Topic:** ${input.topic}
-**Keywords (with monthly search volumes):**
-${keywordContext}
-
-Use the primary keyword in the H1, introduction and distributed throughout. Place secondary keywords in H2/H3 headings weighted by search volume.
-
-**Products to feature in the Natural CTA section (Block 8):**
-${productContext}
-
-**Additional instructions:** ${input.instructions || "None"}
-**Questions to answer (use in FAQ and/or body text):** ${input.questions || "None provided"}
-
-For each text element, include a "rationaleIds" array with placeholder IDs (e.g. ["r1"], ["r2", "r3"]) — these will be filled in by the rationale step. Assign IDs sequentially starting from r1, and make sure related elements share IDs where appropriate.`;
+  const rationaleIdNote = `For each element's "rationaleIds" array, assign placeholder IDs sequentially (r1, r2, …). Related elements may share IDs. These are filled in by a separate rationale step.`;
 
   try {
-    // ── Call 1: generate text content ──────────────────────────────────────
-    const textMessage = await client.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 6000,
-      messages: [{ role: "user", content: textPrompt }],
-      system: SYSTEM_PROMPT,
-    });
+    // ── Call 1: blocks 0–5 (META, HERO, INTRO, USP, BODY 1, BODY 2) ────────
+    const prompt1 = `Generate blocks 0–5 of the Lely CMS page template as a JSON object with a "text" array.
 
-    if (textMessage.content[0].type !== "text") {
+${sharedContext}
+
+Generate ONLY these blocks in order:
+- Block 0: SEO METADATA (meta_title + meta_desc)
+- Block 1: HERO (label + h1)
+- Block 2: INTRODUCTION (label + h2 + max 4 sentences of p)
+- Block 3: USP LIST BLOCK (label + h2 + exactly 4 usp elements)
+- Block 4: BODY TEXT SECTION 1 (label + h2 + 1–2 paragraphs + cta)
+- Block 5: BODY TEXT SECTION 2 (label + h2 + 1–2 paragraphs + cta)
+
+Keep each paragraph to 2–3 sentences. ${rationaleIdNote}`;
+
+    // ── Call 2: blocks 6–10 (BODY 3, TESTIMONIAL, CTA, FAQ, BLOGS, PRODUCTS)
+    const prompt2 = `Generate blocks 6–10 of the Lely CMS page template as a JSON object with a "text" array. Continue rationaleIds sequentially from r20 onwards.
+
+${sharedContext}
+
+Generate ONLY these blocks in order:
+- Block 6: BODY TEXT SECTION 3 (label + h2 + 1–2 paragraphs + cta)
+- Block 7: RELATED TESTIMONIALS (placeholder element)
+- Block 8: NATURAL CTA (h2 + 1–2 paragraphs naturally introducing the products)
+- Block 9: FAQ (exactly 5 faq_q + faq_a pairs, answers max 2 sentences each)
+- Block 10: RELATED BLOGS (exactly 2 related_blog elements)
+- Block 11: RELATED PRODUCTS (placeholder element)
+
+Keep answers and paragraphs concise. ${rationaleIdNote}`;
+
+    const [msg1, msg2] = await Promise.all([
+      client.messages.create({
+        model: "claude-sonnet-4-6",
+        max_tokens: 4000,
+        messages: [{ role: "user", content: prompt1 }],
+        system: SYSTEM_PROMPT,
+      }),
+      client.messages.create({
+        model: "claude-sonnet-4-6",
+        max_tokens: 4000,
+        messages: [{ role: "user", content: prompt2 }],
+        system: SYSTEM_PROMPT,
+      }),
+    ]);
+
+    if (msg1.content[0].type !== "text" || msg2.content[0].type !== "text") {
       return NextResponse.json({ error: "Unexpected response from Claude" }, { status: 500 });
     }
 
-    const textData = parseJSON<{ text: GeneratedContent["text"] }>(textMessage.content[0].text);
+    const part1 = parseJSON<{ text: GeneratedContent["text"] }>(msg1.content[0].text);
+    const part2 = parseJSON<{ text: GeneratedContent["text"] }>(msg2.content[0].text);
+    const allText = [...part1.text, ...part2.text];
 
-    // ── Call 2: generate rationale for the text ────────────────────────────
-    const rationalePrompt = `Here are the page content elements. Generate rationale for each element ID that appears in their rationaleIds arrays.
+    // ── Call 3: rationale for all elements ─────────────────────────────────
+    const rationalePrompt = `Generate rationale for the following page content elements.
 
-${JSON.stringify(textData.text, null, 2)}`;
+${JSON.stringify(allText, null, 2)}`;
 
-    const rationaleMessage = await client.messages.create({
+    const msg3 = await client.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 3000,
       messages: [{ role: "user", content: rationalePrompt }],
       system: RATIONALE_SYSTEM_PROMPT,
     });
 
-    if (rationaleMessage.content[0].type !== "text") {
+    if (msg3.content[0].type !== "text") {
       return NextResponse.json({ error: "Unexpected response from rationale step" }, { status: 500 });
     }
 
-    const rationaleData = parseJSON<{ rationale: GeneratedContent["rationale"] }>(rationaleMessage.content[0].text);
+    const rationaleData = parseJSON<{ rationale: GeneratedContent["rationale"] }>(msg3.content[0].text);
 
-    return NextResponse.json({ text: textData.text, rationale: rationaleData.rationale });
+    return NextResponse.json({ text: allText, rationale: rationaleData.rationale });
 
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
