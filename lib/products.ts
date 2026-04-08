@@ -302,4 +302,104 @@ export const PRODUCT_CATALOG: CatalogCategory[] = [
       },
     ],
   },
+  {
+    id: "latest-innovations",
+    name: "Latest innovations",
+    description:
+      "Innovation is the backbone of Lely's business. Since our foundation in 1948, we have introduced a range of ground-breaking products that have changed the face of the agricultural sector.",
+    products: [
+      {
+        id: "exos",
+        name: "Lely Exos",
+        description:
+          "The first autonomous solution that harvests and feeds fresh grass multiple times a day, 24/7. It mows, transports, feeds and fertilises grass, maximising roughage from your land with minimal labour.",
+        usps: [
+          {
+            title: "Grass efficiency",
+            description:
+              "Adding fresh grass to the ration maximises the use of nutrients and energy from plants, which can lead to increased milk yield from your land.",
+          },
+          {
+            title: "Single operation",
+            description:
+              "Cutting, transporting and feeding grass in a single operation can save on labour, fuel, machinery, storage and feed costs associated with making, storing and feeding silage.",
+          },
+          {
+            title: "Sustainable solution",
+            description:
+              "Research shows cows consuming fresh grass emit less intestinal methane due to easier digestibility. Grass also extracts nitrogen from the air and adds significant organic matter to the soil.",
+          },
+        ],
+      },
+      {
+        id: "orbiter",
+        name: "Lely Orbiter",
+        description:
+          "Automatic on-farm dairy processor that allows farmers to process and market their own milk. Meets the highest food safety standards and operates 24/7 to produce pure dairy products, creating a more direct route to the consumer and increasing the value of the milk.",
+        usps: [
+          {
+            title: "Transparency",
+            description:
+              "Consumers want quality products produced with animal welfare and environmental sustainability in mind. They value transparency and are willing to pay a fair price for it.",
+          },
+          {
+            title: "Craftsmanship",
+            description:
+              "Offers farmers control over each milking individually. The direct connection to the Lely Astronaut allows milk to be separated and processed, creating opportunities for unique, fresh, pure dairy products.",
+          },
+          {
+            title: "Traceability",
+            description:
+              "Selling milk directly from the farm connects farmers with consumers. Consumers gain insight into the origin, and milk becomes a special end product with an authentic narrative.",
+          },
+        ],
+      },
+      {
+        id: "juno-max",
+        name: "Lely Juno Max",
+        description:
+          "High-capacity feed pusher designed for large cattle farms with multiple barns and uneven farmyards. Moves autonomously from barn to barn, pushing feed so it is always within reach at the feed fence. Quick, smart and efficient.",
+        usps: [
+          {
+            title: "Free navigation",
+            description:
+              "Calculates the best route autonomously and can anticipate obstacles. Can be sent to its charging station or to another barn on demand.",
+          },
+          {
+            title: "One robot for all barns",
+            description:
+              "Designed for large farms with several barns. Moves autonomously from barn to barn and can cope with slopes up to 20%.",
+          },
+          {
+            title: "Fast and safe",
+            description:
+              "Stereo camera and laser scanner detect obstacles automatically, pausing and recalculating a new route. A soft bumper provides an additional safety feature.",
+          },
+        ],
+      },
+      {
+        id: "zeta",
+        name: "Lely Zeta",
+        description:
+          "AI-powered barn monitoring concept combining the AI Calving Monitor and AI Barn Monitor. Uses cameras, LED lighting, AI and smart algorithms to recognise and locate cows and barn robots, monitoring cow health and behaviour so dairy farmers can enjoy peace of mind without being in the barn at all times.",
+        usps: [
+          {
+            title: "Insight into cow health",
+            description:
+              "Acts as an extra pair of eyes in the barn, providing data insights from monitoring cow behaviour to tracking the precise location of cows and barn robots.",
+          },
+          {
+            title: "Heat detection",
+            description:
+              "The AI Barn Monitor monitors walking patterns and location variety in the barn to determine if a cow is in heat, sending a notification via app when detected.",
+          },
+          {
+            title: "Calving monitoring",
+            description:
+              "Monitors the calving process and warns you promptly if intervention is required, supporting both the mother cow's new lactation cycle and the newborn calf's start in life.",
+          },
+        ],
+      },
+    ],
+  },
 ];
