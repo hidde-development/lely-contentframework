@@ -3,79 +3,164 @@
 import { useState } from "react";
 import type { TextElement } from "@/lib/types";
 
-function elementsToMarkdown(elements: TextElement[]): string {
-  const lines: string[] = [];
+// Escape HTML entities in raw text
+function esc(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
 
-  // SEO metadata block at top
+// Convert **bold** markers to <strong> after escaping
+function inlineHtml(text: string): string {
+  return esc(text).replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+}
+
+// Strip **bold** markers for plain-text fallback
+function stripBold(text: string): string {
+  return text.replace(/\*\*(.*?)\*\*/g, "$1");
+}
+
+function elementsToHtml(elements: TextElement[]): string {
+  const parts: string[] = [];
+
+  // SEO metadata table at the top
   const metaTitle = elements.find((e) => e.type === "meta_title");
   const metaDesc = elements.find((e) => e.type === "meta_desc");
   if (metaTitle || metaDesc) {
-    lines.push("<!-- SEO METADATA -->");
-    if (metaTitle) lines.push(`<!-- Meta title (${metaTitle.content.length}/65 chars): ${metaTitle.content} -->`);
-    if (metaDesc) lines.push(`<!-- Meta description (${metaDesc.content.length}/155 chars): ${metaDesc.content} -->`);
-    lines.push("", "---", "");
+    parts.push(
+      `<table style="border:1px solid #d1d5db;border-collapse:collapse;width:100%;margin-bottom:16px;font-family:Arial,sans-serif">`,
+      `<tr><td colspan="2" style="background:#f9fafb;padding:8px 12px;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6b7280;border-bottom:1px solid #d1d5db">SEO Metadata</td></tr>`,
+    );
+    if (metaTitle) {
+      parts.push(
+        `<tr><td style="padding:8px 12px;font-weight:600;font-size:12px;color:#6b7280;border-bottom:1px solid #e5e7eb;white-space:nowrap">Meta title (${metaTitle.content.length}/65)</td>`,
+        `<td style="padding:8px 12px;font-size:14px;border-bottom:1px solid #e5e7eb">${esc(metaTitle.content)}</td></tr>`,
+      );
+    }
+    if (metaDesc) {
+      parts.push(
+        `<tr><td style="padding:8px 12px;font-weight:600;font-size:12px;color:#6b7280;white-space:nowrap">Meta description (${metaDesc.content.length}/155)</td>`,
+        `<td style="padding:8px 12px;font-size:14px">${esc(metaDesc.content)}</td></tr>`,
+      );
+    }
+    parts.push(`</table>`);
   }
 
-  let prevWasFaqQ = false;
+  const body = elements.filter((e) => e.type !== "meta_title" && e.type !== "meta_desc");
+  let i = 0;
 
-  for (const el of elements) {
-    if (el.type === "meta_title" || el.type === "meta_desc") continue;
+  while (i < body.length) {
+    const el = body[i];
 
     switch (el.type) {
+      case "label":
+        // CMS labels are not part of the article copy
+        break;
       case "h1":
-        lines.push(`# ${el.content}`, "");
+        parts.push(`<h1 style="font-family:Arial,sans-serif">${inlineHtml(el.content)}</h1>`);
         break;
       case "h2":
-        lines.push(`## ${el.content}`, "");
+        parts.push(`<h2 style="font-family:Arial,sans-serif">${inlineHtml(el.content)}</h2>`);
         break;
       case "h3":
-        lines.push(`### ${el.content}`, "");
+        parts.push(`<h3 style="font-family:Arial,sans-serif">${inlineHtml(el.content)}</h3>`);
         break;
       case "p":
-        lines.push(el.content, "");
+        parts.push(`<p style="font-family:Arial,sans-serif">${inlineHtml(el.content)}</p>`);
         break;
-      case "li":
-        lines.push(`- ${el.content}`);
-        break;
-      case "label":
-        // CMS labels as HTML comments so they don't clutter the text
-        lines.push(`<!-- CMS label: ${el.content} -->`, "");
-        break;
+      case "li": {
+        // Collect all consecutive li elements into one <ul>
+        const lis: string[] = [];
+        while (i < body.length && body[i].type === "li") {
+          lis.push(`<li style="font-family:Arial,sans-serif">${inlineHtml(body[i].content)}</li>`);
+          i++;
+        }
+        parts.push(`<ul>${lis.join("")}</ul>`);
+        continue; // i already advanced past the list
+      }
       case "usp":
-        lines.push(`### ${el.content}`);
-        if (el.meta?.description) lines.push(el.meta.description);
-        lines.push("");
+        parts.push(`<h3 style="font-family:Arial,sans-serif">${esc(el.content)}</h3>`);
+        if (el.meta?.description) parts.push(`<p style="font-family:Arial,sans-serif">${esc(el.meta.description)}</p>`);
         break;
       case "cta": {
-        const hint = el.meta?.hint ? ` _(${el.meta.hint})_` : "";
-        lines.push(`**→ ${el.content}**${hint}`, "");
+        const hint = el.meta?.hint ? ` <em style="color:#6b7280">(${esc(el.meta.hint)})</em>` : "";
+        parts.push(`<p style="font-family:Arial,sans-serif"><strong>→ ${esc(el.content)}</strong>${hint}</p>`);
         break;
       }
       case "placeholder":
-        lines.push(`> ⚠️ ${el.content}`, "");
+        parts.push(
+          `<p style="font-family:Arial,sans-serif;border:1px solid #f59e0b;background:#fffbeb;padding:8px 12px"><strong>⚠ ${esc(el.content)}</strong></p>`,
+        );
         break;
       case "related_blog":
-        lines.push(`- **${el.content}**${el.meta?.description ? `: ${el.meta.description}` : ""}`);
+        parts.push(
+          `<p style="font-family:Arial,sans-serif"><strong>${esc(el.content)}</strong>${el.meta?.description ? `: ${esc(el.meta.description)}` : ""}</p>`,
+        );
         break;
       case "faq_q":
-        lines.push(`**${el.content}**`);
-        prevWasFaqQ = true;
+        parts.push(`<h3 style="font-family:Arial,sans-serif">${esc(el.content)}</h3>`);
         break;
       case "faq_a":
-        lines.push(el.content, "");
-        prevWasFaqQ = false;
+        parts.push(`<p style="font-family:Arial,sans-serif">${inlineHtml(el.content)}</p>`);
         break;
       default:
-        if (el.content) lines.push(el.content, "");
+        if (el.content) parts.push(`<p style="font-family:Arial,sans-serif">${inlineHtml(el.content)}</p>`);
     }
+    i++;
+  }
 
-    // Ensure blank line after list ends before non-list item
-    if (el.type !== "li" && el.type !== "faq_a" && prevWasFaqQ === false) {
-      // already handled per case
+  return `<html><body>${parts.join("\n")}</body></html>`;
+}
+
+function elementsToPlainText(elements: TextElement[]): string {
+  const lines: string[] = [];
+
+  const metaTitle = elements.find((e) => e.type === "meta_title");
+  const metaDesc = elements.find((e) => e.type === "meta_desc");
+  if (metaTitle || metaDesc) {
+    lines.push("SEO METADATA");
+    if (metaTitle) lines.push(`Meta title (${metaTitle.content.length}/65): ${metaTitle.content}`);
+    if (metaDesc) lines.push(`Meta description (${metaDesc.content.length}/155): ${metaDesc.content}`);
+    lines.push("", "---", "");
+  }
+
+  for (const el of elements) {
+    if (el.type === "meta_title" || el.type === "meta_desc" || el.type === "label") continue;
+    const text = stripBold(el.content);
+
+    switch (el.type) {
+      case "h1": case "h2": case "h3":
+        lines.push(text, "");
+        break;
+      case "p": case "faq_a":
+        lines.push(text, "");
+        break;
+      case "li":
+        lines.push(`• ${text}`);
+        break;
+      case "usp":
+        lines.push(text);
+        if (el.meta?.description) lines.push(el.meta.description);
+        lines.push("");
+        break;
+      case "cta":
+        lines.push(`→ ${text}${el.meta?.hint ? ` (${el.meta.hint})` : ""}`, "");
+        break;
+      case "placeholder":
+        lines.push(`[${text}]`, "");
+        break;
+      case "related_blog":
+        lines.push(`${text}${el.meta?.description ? `: ${el.meta.description}` : ""}`, "");
+        break;
+      case "faq_q":
+        lines.push(text);
+        break;
+      default:
+        if (text) lines.push(text, "");
     }
   }
 
-  // Collapse 3+ consecutive blank lines into 2
   return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 
@@ -248,8 +333,20 @@ function FAQSection({ pairs, activeId, onHover }: { pairs: Array<{ q: TextElemen
 export default function TextPanel({ elements, activeRationaleId, onElementHover }: TextPanelProps) {
   const [copied, setCopied] = useState(false);
 
-  function handleCopy() {
-    navigator.clipboard.writeText(elementsToMarkdown(elements));
+  async function handleCopy() {
+    const html = elementsToHtml(elements);
+    const plain = elementsToPlainText(elements);
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "text/html": new Blob([html], { type: "text/html" }),
+          "text/plain": new Blob([plain], { type: "text/plain" }),
+        }),
+      ]);
+    } catch {
+      // Fallback for browsers that don't support ClipboardItem
+      await navigator.clipboard.writeText(plain);
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
@@ -331,7 +428,7 @@ export default function TextPanel({ elements, activeRationaleId, onElementHover 
           {copied ? (
             <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>Copied!</>
           ) : (
-            <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>Copy as Markdown</>
+            <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>Copy article</>
           )}
         </button>
       </div>
