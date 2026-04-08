@@ -1,6 +1,83 @@
 "use client";
 
+import { useState } from "react";
 import type { TextElement } from "@/lib/types";
+
+function elementsToMarkdown(elements: TextElement[]): string {
+  const lines: string[] = [];
+
+  // SEO metadata block at top
+  const metaTitle = elements.find((e) => e.type === "meta_title");
+  const metaDesc = elements.find((e) => e.type === "meta_desc");
+  if (metaTitle || metaDesc) {
+    lines.push("<!-- SEO METADATA -->");
+    if (metaTitle) lines.push(`<!-- Meta title (${metaTitle.content.length}/65 chars): ${metaTitle.content} -->`);
+    if (metaDesc) lines.push(`<!-- Meta description (${metaDesc.content.length}/155 chars): ${metaDesc.content} -->`);
+    lines.push("", "---", "");
+  }
+
+  let prevWasFaqQ = false;
+
+  for (const el of elements) {
+    if (el.type === "meta_title" || el.type === "meta_desc") continue;
+
+    switch (el.type) {
+      case "h1":
+        lines.push(`# ${el.content}`, "");
+        break;
+      case "h2":
+        lines.push(`## ${el.content}`, "");
+        break;
+      case "h3":
+        lines.push(`### ${el.content}`, "");
+        break;
+      case "p":
+        lines.push(el.content, "");
+        break;
+      case "li":
+        lines.push(`- ${el.content}`);
+        break;
+      case "label":
+        // CMS labels as HTML comments so they don't clutter the text
+        lines.push(`<!-- CMS label: ${el.content} -->`, "");
+        break;
+      case "usp":
+        lines.push(`### ${el.content}`);
+        if (el.meta?.description) lines.push(el.meta.description);
+        lines.push("");
+        break;
+      case "cta": {
+        const hint = el.meta?.hint ? ` _(${el.meta.hint})_` : "";
+        lines.push(`**→ ${el.content}**${hint}`, "");
+        break;
+      }
+      case "placeholder":
+        lines.push(`> ⚠️ ${el.content}`, "");
+        break;
+      case "related_blog":
+        lines.push(`- **${el.content}**${el.meta?.description ? `: ${el.meta.description}` : ""}`);
+        break;
+      case "faq_q":
+        lines.push(`**${el.content}**`);
+        prevWasFaqQ = true;
+        break;
+      case "faq_a":
+        lines.push(el.content, "");
+        prevWasFaqQ = false;
+        break;
+      default:
+        if (el.content) lines.push(el.content, "");
+    }
+
+    // Ensure blank line after list ends before non-list item
+    if (el.type !== "li" && el.type !== "faq_a" && prevWasFaqQ === false) {
+      // already handled per case
+    }
+  }
+
+  // Collapse 3+ consecutive blank lines into 2
+  return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
 
 interface TextPanelProps {
   elements: TextElement[];
@@ -169,6 +246,13 @@ function FAQSection({ pairs, activeId, onHover }: { pairs: Array<{ q: TextElemen
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function TextPanel({ elements, activeRationaleId, onElementHover }: TextPanelProps) {
+  const [copied, setCopied] = useState(false);
+
+  function handleCopy() {
+    navigator.clipboard.writeText(elementsToMarkdown(elements));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
   if (elements.length === 0) {
     return (
       <main className="flex-1 bg-white border-r border-gray-200 h-full overflow-hidden flex items-center justify-center">
@@ -242,12 +326,13 @@ export default function TextPanel({ elements, activeRationaleId, onElementHover 
           <div className="w-2 h-2 rounded-full bg-green-500"></div>
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Generated text</h2>
         </div>
-        <button onClick={() => { const text = elements.map((el) => el.content).join("\n\n"); navigator.clipboard.writeText(text); }}
-          className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 transition-colors">
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-          </svg>
-          Copy
+        <button onClick={handleCopy}
+          className={`text-xs flex items-center gap-1.5 transition-colors ${copied ? "text-green-600" : "text-gray-400 hover:text-gray-600"}`}>
+          {copied ? (
+            <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>Copied!</>
+          ) : (
+            <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>Copy as Markdown</>
+          )}
         </button>
       </div>
 
