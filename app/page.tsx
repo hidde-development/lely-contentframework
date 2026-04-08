@@ -4,6 +4,7 @@ import { useState } from "react";
 import InputPanel from "@/components/InputPanel";
 import TextPanel from "@/components/TextPanel";
 import RationalePanel from "@/components/RationalePanel";
+import ProgressBar from "@/components/ProgressBar";
 import type { GenerateInput, GeneratedContent } from "@/lib/types";
 
 export default function Home() {
@@ -74,6 +75,8 @@ export default function Home() {
           </div>
         )}
       </header>
+
+      <ProgressBar isLoading={isLoading} />
 
       {/* Three-panel layout */}
       <div className="flex-1 flex overflow-hidden">

@@ -201,7 +201,7 @@ Volg de volledige template-structuur (modules A t/m H) en geef bij elk element d
   try {
     const message = await client.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 8192,
+      max_tokens: 4096,
       messages: [{ role: "user", content: userPrompt }],
       system: SYSTEM_PROMPT,
     });
