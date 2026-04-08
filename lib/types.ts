@@ -61,9 +61,15 @@ export interface KeywordEntry {
   isPrimary: boolean;
 }
 
+export interface ProductUsp {
+  title: string;
+  description: string;
+}
+
 export interface ProductEntry {
   name: string;
   description: string;
+  usps?: ProductUsp[];
 }
 
 export interface GenerateInput {

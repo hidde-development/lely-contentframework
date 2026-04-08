@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import type { GenerateInput, KeywordEntry, ProductEntry } from "@/lib/types";
+import { PRODUCT_CATALOG } from "@/lib/products";
 
 interface InputPanelProps {
   onGenerate: (input: GenerateInput) => void;
@@ -33,10 +34,10 @@ export default function InputPanel({ onGenerate, isLoading }: InputPanelProps) {
   const [topic, setTopic] = useState("");
   const [keywords, setKeywords] = useState<KeywordEntry[]>([]);
   const [showPasteArea, setShowPasteArea] = useState(false);
-  const [products, setProducts] = useState<ProductEntry[]>([]);
-  const [productName, setProductName] = useState("");
-  const [productDesc, setProductDesc] = useState("");
-  const [showProductForm, setShowProductForm] = useState(false);
+  const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
+    new Set(PRODUCT_CATALOG.map((c) => c.id))
+  );
   const [instructions, setInstructions] = useState("");
   const [questions, setQuestions] = useState("");
   const pasteRef = useRef<HTMLTextAreaElement>(null);
@@ -73,16 +74,34 @@ export default function InputPanel({ onGenerate, isLoading }: InputPanelProps) {
   }
 
   // ── Products ──────────────────────────────────────
-  function addProduct() {
-    if (!productName.trim()) return;
-    setProducts((prev) => [...prev, { name: productName.trim(), description: productDesc.trim() }]);
-    setProductName("");
-    setProductDesc("");
-    setShowProductForm(false);
+  function toggleProduct(productId: string) {
+    setSelectedProductIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(productId)) next.delete(productId);
+      else next.add(productId);
+      return next;
+    });
   }
 
-  function removeProduct(idx: number) {
-    setProducts((prev) => prev.filter((_, i) => i !== idx));
+  function toggleCategory(categoryId: string) {
+    setExpandedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(categoryId)) next.delete(categoryId);
+      else next.add(categoryId);
+      return next;
+    });
+  }
+
+  function getSelectedProducts(): ProductEntry[] {
+    const result: ProductEntry[] = [];
+    for (const category of PRODUCT_CATALOG) {
+      for (const product of category.products) {
+        if (selectedProductIds.has(product.id)) {
+          result.push({ name: product.name, description: product.description, usps: product.usps });
+        }
+      }
+    }
+    return result;
   }
 
   // ── Submit ────────────────────────────────────────
@@ -96,7 +115,7 @@ export default function InputPanel({ onGenerate, isLoading }: InputPanelProps) {
       mainKeyword: primary.keyword,
       subKeywords: keywords.filter((k) => !k.isPrimary).map((k) => k.keyword).join(", "),
       keywords,
-      products,
+      products: getSelectedProducts(),
       instructions,
       questions,
     });
@@ -104,6 +123,7 @@ export default function InputPanel({ onGenerate, isLoading }: InputPanelProps) {
 
   const primaryKeyword = keywords.find((k) => k.isPrimary);
   const canGenerate = !isLoading && topic.trim() && primaryKeyword !== undefined;
+  const selectedCount = selectedProductIds.size;
 
   return (
     <aside className="w-80 min-w-[280px] max-w-sm bg-gray-900 border-r border-gray-700 flex flex-col h-full overflow-hidden">
@@ -197,69 +217,93 @@ export default function InputPanel({ onGenerate, isLoading }: InputPanelProps) {
         {/* Products to feature */}
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="text-xs font-medium text-gray-300">Products to feature</label>
-            {!showProductForm && (
-              <button type="button" onClick={() => setShowProductForm(true)}
-                className="text-xs text-brand-500 hover:text-brand-600 flex items-center gap-1 transition-colors">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Add product
+            <label className="text-xs font-medium text-gray-300">
+              Products to feature
+              {selectedCount > 0 && (
+                <span className="ml-2 bg-brand-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{selectedCount}</span>
+              )}
+            </label>
+            {selectedCount > 0 && (
+              <button type="button" onClick={() => setSelectedProductIds(new Set())}
+                className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
+                Clear
               </button>
             )}
           </div>
 
-          {/* Existing products */}
-          {products.length > 0 && (
-            <ul className="space-y-1.5 mb-2">
-              {products.map((p, idx) => (
-                <li key={idx} className="flex items-start gap-2 bg-gray-800 rounded-lg px-3 py-2 border border-gray-700">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-white truncate">{p.name}</p>
-                    {p.description && <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{p.description}</p>}
-                  </div>
-                  <button type="button" onClick={() => removeProduct(idx)} className="text-gray-600 hover:text-gray-300 shrink-0 mt-0.5 transition-colors">
-                    <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M4.293 4.293a1 1 0 011.414 0L8 6.586l2.293-2.293a1 1 0 111.414 1.414L9.414 8l2.293 2.293a1 1 0 01-1.414 1.414L8 9.414l-2.293 2.293a1 1 0 01-1.414-1.414L6.586 8 4.293 5.707a1 1 0 010-1.414z" /></svg>
+          <div className="rounded-lg border border-gray-700 overflow-hidden divide-y divide-gray-700">
+            {PRODUCT_CATALOG.map((category) => {
+              const isExpanded = expandedCategories.has(category.id);
+              const selectedInCategory = category.products.filter((p) => selectedProductIds.has(p.id)).length;
+
+              return (
+                <div key={category.id}>
+                  {/* Category header */}
+                  <button
+                    type="button"
+                    onClick={() => toggleCategory(category.id)}
+                    className="w-full flex items-center justify-between px-3 py-2 bg-gray-800 hover:bg-gray-750 transition-colors text-left"
+                  >
+                    <span className="text-xs font-semibold text-gray-300">{category.name}</span>
+                    <div className="flex items-center gap-2">
+                      {selectedInCategory > 0 && (
+                        <span className="bg-brand-500/20 text-brand-400 text-xs font-medium px-1.5 py-0.5 rounded-full">
+                          {selectedInCategory}
+                        </span>
+                      )}
+                      <svg
+                        className={`w-3.5 h-3.5 text-gray-500 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
                   </button>
-                </li>
-              ))}
-            </ul>
-          )}
 
-          {/* Add product form */}
-          {showProductForm && (
-            <div className="bg-gray-800 border border-gray-600 rounded-lg p-3 space-y-2">
-              <input
-                type="text"
-                value={productName}
-                onChange={(e) => setProductName(e.target.value)}
-                placeholder="Product name (e.g. Lely Grazeway)"
-                className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 transition-colors"
-                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addProduct())}
-                autoFocus
-              />
-              <textarea
-                value={productDesc}
-                onChange={(e) => setProductDesc(e.target.value)}
-                placeholder="Short product description (optional — helps Claude write more accurately)"
-                rows={2}
-                className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 resize-none transition-colors"
-              />
-              <div className="flex gap-2">
-                <button type="button" onClick={addProduct} disabled={!productName.trim()}
-                  className="flex-1 bg-brand-500 hover:bg-brand-600 disabled:bg-gray-700 disabled:text-gray-500 text-white text-xs font-medium py-1.5 rounded-md transition-colors">
-                  Add
-                </button>
-                <button type="button" onClick={() => { setShowProductForm(false); setProductName(""); setProductDesc(""); }}
-                  className="flex-1 bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs font-medium py-1.5 rounded-md transition-colors">
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
+                  {/* Products in category */}
+                  {isExpanded && (
+                    <ul className="divide-y divide-gray-700/50 bg-gray-900">
+                      {category.products.map((product) => {
+                        const isSelected = selectedProductIds.has(product.id);
+                        return (
+                          <li key={product.id}>
+                            <button
+                              type="button"
+                              onClick={() => toggleProduct(product.id)}
+                              className={`w-full flex items-start gap-2.5 px-3 py-2.5 text-left transition-colors ${
+                                isSelected ? "bg-brand-500/10" : "hover:bg-gray-800/60"
+                              }`}
+                            >
+                              {/* Checkbox */}
+                              <div className={`mt-0.5 w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+                                isSelected ? "bg-brand-500 border-brand-500" : "border-gray-600"
+                              }`}>
+                                {isSelected && (
+                                  <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <p className={`text-xs font-medium ${isSelected ? "text-white" : "text-gray-300"}`}>{product.name}</p>
+                                <p className="text-xs text-gray-500 mt-0.5 leading-relaxed line-clamp-2">{product.description}</p>
+                                {isSelected && product.usps.length > 0 && (
+                                  <p className="text-xs text-brand-400 mt-1">{product.usps.length} USPs included in prompt</p>
+                                )}
+                              </div>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
+              );
+            })}
+          </div>
 
-          {products.length === 0 && !showProductForm && (
-            <p className="text-xs text-gray-500">Add one or more Lely products to feature in the natural CTA section.</p>
+          {selectedCount === 0 && (
+            <p className="mt-1.5 text-xs text-gray-500">Tick one or more products to include their details and USPs in the prompt.</p>
           )}
         </div>
 

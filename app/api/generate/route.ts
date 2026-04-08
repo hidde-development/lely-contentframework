@@ -260,7 +260,12 @@ export async function POST(request: NextRequest) {
     : `- ${input.mainKeyword} ← PRIMARY${input.subKeywords ? "\n" + input.subKeywords.split(",").map((k) => `- ${k.trim()}`).join("\n") : ""}`;
 
   const productContext = input.products && input.products.length > 0
-    ? input.products.map((p) => `- **${p.name}**${p.description ? `: ${p.description}` : ""}`).join("\n")
+    ? input.products.map((p) => {
+        const uspLines = p.usps && p.usps.length > 0
+          ? "\n" + p.usps.map((u) => `    - **${u.title}**: ${u.description}`).join("\n")
+          : "";
+        return `- **${p.name}**${p.description ? `: ${p.description}` : ""}${uspLines}`;
+      }).join("\n")
     : "No specific products provided — use your knowledge of Lely products relevant to the topic.";
 
   const sharedContext = `Topic: ${input.topic}
