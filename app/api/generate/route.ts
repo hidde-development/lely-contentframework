@@ -226,13 +226,24 @@ Respond ONLY with valid JSON, no markdown. Format:
   ]
 }`;
 
-function parseJSON<T>(text: string): T {
+function parseJSON<T>(text: string, label: string): T {
+  // Strip markdown code fences if Claude wrapped the JSON
+  const stripped = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
   try {
-    return JSON.parse(text);
-  } catch {
-    const match = text.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error("No valid JSON found in response");
-    return JSON.parse(match[0]);
+    return JSON.parse(stripped);
+  } catch (firstErr) {
+    // Try extracting the outermost JSON object
+    const match = stripped.match(/\{[\s\S]*\}/);
+    if (match) {
+      try {
+        return JSON.parse(match[0]);
+      } catch {
+        // fall through to detailed error
+      }
+    }
+    // Log the raw response so we can see exactly what Claude returned
+    console.error(`[${label}] Raw response that failed to parse:\n`, stripped.slice(0, 2000));
+    throw new Error(`${label}: invalid JSON — ${(firstErr as Error).message}`);
   }
 }
 
@@ -310,8 +321,8 @@ Keep answers and paragraphs concise. ${rationaleIdNote}`;
       return NextResponse.json({ error: "Unexpected response from Claude" }, { status: 500 });
     }
 
-    const part1 = parseJSON<{ text: GeneratedContent["text"] }>(msg1.content[0].text);
-    const part2 = parseJSON<{ text: GeneratedContent["text"] }>(msg2.content[0].text);
+    const part1 = parseJSON<{ text: GeneratedContent["text"] }>(msg1.content[0].text, "Text call 1 (blocks 0-5)");
+    const part2 = parseJSON<{ text: GeneratedContent["text"] }>(msg2.content[0].text, "Text call 2 (blocks 6-11)");
     const allText = [...part1.text, ...part2.text];
 
     // ── Call 3: rationale for all elements ─────────────────────────────────
@@ -330,7 +341,7 @@ ${JSON.stringify(allText, null, 2)}`;
       return NextResponse.json({ error: "Unexpected response from rationale step" }, { status: 500 });
     }
 
-    const rationaleData = parseJSON<{ rationale: GeneratedContent["rationale"] }>(msg3.content[0].text);
+    const rationaleData = parseJSON<{ rationale: GeneratedContent["rationale"] }>(msg3.content[0].text, "Rationale call");
 
     return NextResponse.json({ text: allText, rationale: rationaleData.rationale });
 
