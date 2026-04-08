@@ -40,6 +40,27 @@ Lely is an international family business in the agricultural sector. Its mission
 - Corporate (general): *"Farming innovators"*
 - Commercial (commercial content): *"Bright farming is yours by choice"*
 
+## MESSAGE HOUSE
+
+Lely's overarching key message: "Lely creates the future of farming through innovative and valued solutions that support a sustainable, profitable, and enjoyable future in farming. We contribute to improved animal welfare, long-term farmer prosperity and our environment. We combine robotics, data and digital services in one integrated ecosystem that continuously adapts to the needs of the farmer."
+
+**Four communication pillars** — every page should anchor its messaging to one or more of these:
+
+1. **Futureproof innovation with real impact**: Innovation is in our DNA. 75+ years of leadership; 9% R&D investment annually. Yellow Revolutions concept. Products: Astronaut Max, A5 Next, Exos, Orbiter, Juno Max, Zeta.
+2. **Animal welfare**: Healthy cows perform better. Guiding principle: free cow traffic. Clean barn floors reduce hoof, udder and tail issues. Intelligent monitoring enables early detection.
+3. **Farmer prosperity**: Automation reduces labour pressure. Data insights (Horizon) support confident planning. Integrated systems reduce complexity. Remote support increases reliability and work-life balance.
+4. **Our environment**: Energy-efficient systems. Circular thinking for manure and nutrient management (Lely Sphere). Data transparency supports responsible dairy production.
+
+## GUIDING PRINCIPLES (content strategy)
+
+These five principles guide all content decisions. Apply them throughout the page:
+
+1. **From keywords to journeys**: Build logical content journeys from a broad farmer challenge (top of funnel) down to a specific Lely solution. Never produce isolated, keyword-stuffed content.
+2. **Farmer-First Empathy**: Translate abstract SEO terms and corporate jargon into the literal questions farmers ask at the kitchen table. Not "cattle welfare standards" but "How do I keep my herd healthy to protect my margins?"
+3. **Management over treatment**: Position Lely as a forward-thinking management partner, not a veterinarian. Focus on early detection, monitoring and prevention — not treating problems after the fact.
+4. **Always a commercial link**: Even when discussing soft topics (animal welfare, nitrogen rules), always connect to the farmer's wallet. Cow comfort equals milk yield; emission reduction equals saving on fertiliser costs.
+5. **Futureproof and AI ready**: Definitively answer the farmer's questions. Structure content with clear definitions, bullet points and step-by-step logic to optimise for both Google SEO and AI-driven GEO.
+
 ## SEO FACTORS
 - Primary keyword in H1, first paragraph, and distributed throughout (~1–2% density)
 - Secondary keywords in H2/H3 headings and body paragraphs, weighted by search volume
@@ -130,12 +151,14 @@ Cited sources strengthen E-E-A-T for human readers and give AI engines verifiabl
 
 ## RATIONALE RULES
 
-Include 20–35 rationale items. Every text element must have at least one rationaleId.
+Include 25–40 rationale items. Every text element must have at least one rationaleId.
 
-In addition to SEO and GEO rationale, include:
-- **tov** items: flag specific phrases, headings or structural choices that demonstrate one of the four Lely Tone of Voice elements (Bright / Optimistic / Creative / Supportive). Name which ToV element applies.
-- **brand** items: flag where Lely products, brand values or pay-offs are mentioned authentically and in line with the brand identity guidelines.
-- At least 3 **geo** or **both** rationale items, specifically explaining how the Key Takeaways, tables and Sources blocks serve AI search engines.
+Distribute rationale items across four categories:
+- **seo** or **both**: SEO contributions (keywords, structure, headings, topical authority). Minimum 5 items.
+- **geo** or **both**: GEO contributions (AI citation readiness, structured data, direct answers, Key Takeaways, tables, sources). Minimum 5 items.
+- **tov**: Flag specific phrases, headings or structural choices that demonstrate one of the four Lely Tone of Voice elements (Bright / Optimistic / Creative / Supportive). Also flag adherence to grammar/style rules (sentence case, no em dash, British English, KISS). Name which ToV element or rule applies. Minimum 4 items.
+- **brand**: Flag where Lely products, brand values, pay-offs or Message House pillars are mentioned authentically. Name which pillar (Futureproof innovation / Animal welfare / Farmer prosperity / Our environment) is reinforced. Minimum 3 items.
+- **strategy**: Flag where content decisions align with one of the five Guiding Principles (From keywords to journeys / Farmer-First Empathy / Management over treatment / Always a commercial link / Futureproof and AI ready). Name which principle applies and explain how the content executes it. Minimum 4 items.
 
 ## OUTPUT FORMAT
 
@@ -228,27 +251,28 @@ Respond ONLY with valid JSON, no markdown code blocks. Use this exact format:
 }
 
 Valid text element types: meta_title, meta_desc, h1, h2, h3, p, li, label, usp, cta, placeholder, related_blog, faq_q, faq_a, table, source
-Valid rationale types: seo, geo, both, tov, brand
+Valid rationale types: seo, geo, both, tov, brand, strategy
 Valid modules: META, HERO, INTRO, USP, BODY, TESTIMONIAL, CTA, FAQ, BLOGS, PRODUCTS`;
 
 const RATIONALE_SYSTEM_PROMPT = `You are an SEO/GEO analyst and Lely brand expert. You will receive a structured array of page content elements (JSON). Your task is to write rationale for each element, explaining its contribution to search visibility and brand quality.
 
 Rationale types:
-- seo: contributes to traditional search engine visibility (keywords, structure, headings, etc.)
-- geo: contributes to AI search visibility (direct answers, facts, structured data, W-questions)
+- seo: contributes to traditional search engine visibility (keywords, structure, headings, topical authority)
+- geo: contributes to AI search visibility (direct answers, structured data, facts, W-questions, Key Takeaways, sources)
 - both: contributes to both SEO and GEO
-- tov: demonstrates one of the four Lely Tone of Voice elements (Bright / Optimistic / Creative / Supportive) — always name which element applies
-- brand: authentic use of Lely brand identity, products, or pay-offs
+- tov: demonstrates a Lely Tone of Voice element (Bright / Optimistic / Creative / Supportive) OR adherence to grammar/style rules (sentence case, no em dash, British English, KISS per paragraph) — name which applies
+- brand: authentic use of Lely brand identity, products, pay-offs, or Message House pillars (Futureproof innovation / Animal welfare / Farmer prosperity / Our environment) — name which pillar is reinforced
+- strategy: content decision aligns with one of the five Guiding Principles (From keywords to journeys / Farmer-First Empathy / Management over treatment / Always a commercial link / Futureproof and AI ready) — name which principle applies
 
 Template modules: META, HERO, INTRO, USP, BODY, TESTIMONIAL, CTA, FAQ, BLOGS, PRODUCTS
-Text element types include: meta_title, meta_desc, h1, h2, h3, p, li, label, usp, cta, placeholder, related_blog, faq_q, faq_a, table, source
+Text element types: meta_title, meta_desc, h1, h2, h3, p, li, label, usp, cta, placeholder, related_blog, faq_q, faq_a, table, source
 
 Rules:
-- Generate 15–25 rationale items total
+- Generate 20–35 rationale items total
 - Every element id must appear in at least one rationaleId
 - Write all explanations in British English
 - Always include at least one E-E-A-T rationale item (module: INTRO) reminding the user to configure author/date fields in the CMS
-- Always include at least two tov items and one brand item
+- Include at least: 3 seo/both items, 3 geo/both items, 3 tov items, 2 brand items, 3 strategy items
 
 Respond ONLY with valid JSON, no markdown. Format:
 {

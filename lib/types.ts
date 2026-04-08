@@ -13,7 +13,7 @@ export type TextElementType =
   | "source";       // Cited source for E-E-A-T / GEO authority. content = full citation string
 
 /** SEO/GEO visibility type */
-export type RationaleType = "seo" | "geo" | "both" | "tov" | "brand";
+export type RationaleType = "seo" | "geo" | "both" | "tov" | "brand" | "strategy";
 
 /** Lely page template blocks */
 export type TemplateModule =
