@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import type { GenerateInput, GeneratedContent } from "@/lib/types";
 
-const client = new Anthropic({
-  apiKey: process.env.CLAUDE_API_KEY,
-});
+// Supports multiple common Vercel env var names for the Anthropic API key
+const apiKey =
+  process.env.ANTHROPIC_API_KEY ||
+  process.env.CLAUDE_API_KEY ||
+  process.env.CLAUDE;
+
+const client = new Anthropic({ apiKey });
 
 const SYSTEM_PROMPT = `Je bent een Senior Webdeveloper en Expert in SEO (Search Engine Optimization) en GEO (Generative Engine Optimization). Je schrijft content die perfect leesbaar is voor menselijke gebruikers (UX), traditionele zoekmachine-crawlers (Googlebot) én moderne AI-agents/LLM's (ChatGPT, Gemini, Perplexity).
 
@@ -196,7 +200,7 @@ Volg de volledige template-structuur (modules A t/m H) en geef bij elk element d
 
   try {
     const message = await client.messages.create({
-      model: "claude-opus-4-5",
+      model: "claude-sonnet-4-6",
       max_tokens: 8192,
       messages: [{ role: "user", content: userPrompt }],
       system: SYSTEM_PROMPT,
@@ -220,7 +224,8 @@ Volg de volledige template-structuur (modules A t/m H) en geef bij elk element d
 
     return NextResponse.json(parsed);
   } catch (error) {
-    console.error("Claude API error:", error);
-    return NextResponse.json({ error: "An error occurred whilst generating the text" }, { status: 500 });
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Claude API error:", message);
+    return NextResponse.json({ error: `Generation failed: ${message}` }, { status: 500 });
   }
 }
