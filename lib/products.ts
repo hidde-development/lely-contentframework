@@ -25,6 +25,52 @@ export const PRODUCT_CATALOG: CatalogCategory[] = [
       "Our solutions for automatic milking can help you produce high-quality milk and achieve your goals. From optimising labour efficiency to helping to improve cow health and increase your yields.",
     products: [
       {
+        id: "grazeway",
+        name: "Lely Grazeway",
+        description:
+          "Selection box that enables efficient grazing in combination with automatic milking. Cows decide for themselves whether and when they want to go out to pasture. The Grazeway then determines whether they can, using the Lely Tags cow recognition system to check milking status and individual grazing permissions.",
+        usps: [
+          {
+            title: "Voluntary grazing",
+            description:
+              "Cows choose when to go to pasture, supporting natural behaviour and reducing stress while maintaining free cow traffic around the milking robot.",
+          },
+          {
+            title: "Smart selection",
+            description:
+              "The Grazeway uses Lely Tags cow recognition to automatically decide per cow whether pasture access is permitted, based on milking interval and individual settings.",
+          },
+          {
+            title: "Seamless integration",
+            description:
+              "Works directly with the Lely Astronaut milking robot and Lely Horizon management system, so grazing and milking schedules are always aligned without manual intervention.",
+          },
+        ],
+      },
+      {
+        id: "cooling-tank",
+        name: "Lely Cooling Tank",
+        description:
+          "Milk cooling tank developed specifically for automatic milking with the Lely Astronaut. Guarantees milk quality and maximum hygiene 24 hours a day. Cooling starts from the very first drop and automatically adjusts to the milk volume in the tank. Milk data is connected directly to the Lely Horizon management system.",
+        usps: [
+          {
+            title: "Continuous quality",
+            description:
+              "Cooling begins at the first drop of milk and adapts dynamically to the volume in the tank, ensuring consistent milk quality and hygiene around the clock.",
+          },
+          {
+            title: "Astronaut integration",
+            description:
+              "Developed to work seamlessly with the Lely Astronaut automatic milking system, with no manual intervention required to maintain milk quality between milkings.",
+          },
+          {
+            title: "Management insight",
+            description:
+              "Tank data is connected to Lely Horizon, giving farmers real-time insight into milk volumes, cooling performance, and hygiene status from anywhere.",
+          },
+        ],
+      },
+      {
         id: "astronaut-a5-next",
         name: "Lely Astronaut A5 Next",
         description:
@@ -126,6 +172,34 @@ export const PRODUCT_CATALOG: CatalogCategory[] = [
           },
         ],
       },
+      {
+        id: "meteor-hoof-bath",
+        name: "Lely Meteor Hoof Bath",
+        description:
+          "Automated hoof bath that provides regular, preventive hoof care as part of the Lely Meteor hoof health system. With a single button press, the bath fills automatically with water and hoof care product. Cows walk through after milking in the robot or at a fixed point in the barn. The dedicated Lely Meteor Hoof Bath Liquid is formulated for preventive use and is free from formalin, copper sulphates, QACs, and antibiotics. The self-cleaning system prevents contamination from spreading through the herd.",
+        usps: [
+          {
+            title: "Preventive care",
+            description:
+              "Regular hoof baths with the dedicated Lely Meteor Hoof Bath Liquid reduce the incidence of hoof disorders before lameness develops, supporting herd mobility and free cow traffic.",
+          },
+          {
+            title: "Automated dosing",
+            description:
+              "A single button press fills the bath with the correct ratio of water and hoof care product, removing manual mixing and ensuring consistent dosing every time.",
+          },
+          {
+            title: "Safe formulation",
+            description:
+              "The Lely Meteor Hoof Bath Liquid contains no formalin, copper sulphates, QACs, or antibiotics, making it safe for cows, farmers, and the environment.",
+          },
+          {
+            title: "Self-cleaning",
+            description:
+              "The self-cleaning system flushes contamination after use, preventing the hoof bath itself from becoming a source of infection within the herd.",
+          },
+        ],
+      },
     ],
   },
   {
@@ -187,6 +261,29 @@ export const PRODUCT_CATALOG: CatalogCategory[] = [
             title: "Flexible options",
             description:
               "Can be equipped with a smart skirt lifter, electric bumper protection, LED light and barn door control box. The Flex package includes all options except the barn door control box.",
+          },
+        ],
+      },
+      {
+        id: "cosmix",
+        name: "Lely Cosmix",
+        description:
+          "Precision concentrate feeder that works in combination with the Lely Astronaut milking robot and Lely Tags cow recognition. Improves rumen health and milk yield by delivering exactly the right amount of concentrate per cow based on individual needs. Designed to dispense even very small quantities accurately, preventing waste, mould, and clumping. Concentrate intake per cow is tracked and visible in Lely Horizon.",
+        usps: [
+          {
+            title: "Precision feeding",
+            description:
+              "Delivers the exact concentrate ration each cow requires, including very small portions, reducing costly concentrate waste and preventing mould or clumping in the feed bowl.",
+          },
+          {
+            title: "Rumen health",
+            description:
+              "Needs-based concentrate allocation supports stable rumen function, which can positively impact milk yield, cow health, and fertility across the herd.",
+          },
+          {
+            title: "Individual insight",
+            description:
+              "Integration with Lely Horizon provides per-cow concentrate intake data, so farmers can act immediately when a cow's intake deviates from expectations.",
           },
         ],
       },
@@ -433,6 +530,42 @@ export const PRODUCT_CATALOG: CatalogCategory[] = [
             title: "Connected",
             description:
               "Combines individual cow data from your Lely equipment with selected third-party information into one single app. You decide how and with whom to share your data.",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "sensors-monitoring",
+    name: "Sensors & monitoring",
+    description:
+      "Lely's sensor and identification systems form the data layer that connects every barn robot, cow, and management decision. By measuring the most vital indicators per cow around the clock, farmers gain the insight to act before problems become visible.",
+    products: [
+      {
+        id: "lely-tags",
+        name: "Lely Tags",
+        description:
+          "Cow recognition and health monitoring system that measures the most vital data per cow every two hours, 24 hours a day. Tags are available for different purposes: identification, heat detection, and rumination monitoring. The data feeds directly into Lely Horizon and enables other Lely systems, including the Grazeway and Cosmix, to make individual decisions per cow automatically.",
+        usps: [
+          {
+            title: "24/7 health data",
+            description:
+              "Vital parameters per cow are measured every two hours, giving farmers continuous insight into activity, rumination, and health status without manual checking.",
+          },
+          {
+            title: "Early intervention",
+            description:
+              "Deviations in rumination or activity patterns are flagged before clinical symptoms appear, allowing farmers to intervene early and reduce the impact of illness on production.",
+          },
+          {
+            title: "System integration",
+            description:
+              "Lely Tags data powers automated decisions across the Lely system: the Grazeway uses it for grazing selection, the Cosmix for concentrate allocation, and Lely Horizon for herd management.",
+          },
+          {
+            title: "Multiple tag types",
+            description:
+              "Separate tags are available for identification, heat detection, and rumination monitoring, so farmers can build the monitoring setup that matches their priorities.",
           },
         ],
       },
