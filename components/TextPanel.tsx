@@ -210,7 +210,7 @@ function bold(text: string) {
 
 // ── Individual renderers ──────────────────────────────────────────────────────
 
-function MetaBlock({ elements, activeId, onHover }: { elements: TextElement[]; activeId: string | null; onHover: (ids: string[] | null) => void }) {
+function MetaBlock({ elements, activeId, onHover }: { elements: TextElement[]; activeId: string | null; onHover: (id: string | null) => void }) {
   const titleEl = elements.find((e) => e.type === "meta_title");
   const descEl = elements.find((e) => e.type === "meta_desc");
 
