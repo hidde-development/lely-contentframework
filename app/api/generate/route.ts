@@ -102,6 +102,10 @@ Every page must anchor its core message to one or more pillars:
 4. **Always a commercial link**: Every topic must connect to the farmer's wallet. Cow comfort = milk yield. Emission reduction = fertiliser savings. Labour saving = lower cost per litre.
 5. **Futureproof and AI ready**: Answer the farmer's questions definitively. Structure content with clear definitions, bullet points and step-by-step logic for both Google and AI search.
 
+### Page-level requirements
+- **Benefits triad**: Somewhere on the page — at least once, in any section — the benefit of the Lely solution must be expressed in terms of one or more of these three outcomes: cost savings (lower cost per litre, reduced medicine spend, fertiliser savings), time savings (hours freed per week, reduced labour pressure), or quality of life (animal welfare, herd health, landscape). Do not end the page without making at least one of these connections explicit.
+- **Scannable for campaign visitors**: This page may be the landing destination for a paid campaign. A visitor who has never heard of Lely must be able to understand the page's value within 10 seconds of arrival. Every H2 must be independently meaningful. The key takeaways block must function as a standalone summary. Do not bury the core message in long paragraphs.
+
 ## LELY PRODUCT REFERENCE
 Always refer to products by their full entity name. Never use generic substitutes.
 
@@ -262,6 +266,7 @@ You will receive the original brief and the full generated page content. Check e
 - T3: At least one clear, explicit connection between a product feature and a financial or business outcome for the farmer
 - T4: Content is positioned as management and prevention, not cure or treatment after the fact
 - T5: Body Section 1 is encyclopedic (what/why), Body Section 2 addresses cost/impact, Body Section 3 introduces the Lely preventive approach with a product-specific data point
+- T6: The page contains at least one explicit statement connecting the Lely solution to a concrete farmer benefit: cost savings, time savings, or improved quality of life for animals or the landscape
 
 ## SCORING
 Score each category 0–100 based on criteria met. Weight high-severity failures more heavily than low-severity ones.
