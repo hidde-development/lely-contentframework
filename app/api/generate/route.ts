@@ -90,6 +90,16 @@ GEO (Generative Engine Optimisation) means writing so that AI search engines (Ch
   - Correct: "Farms using the **Lely Astronaut A5 Next** report somatic cell counts below 150,000 cells/ml on average, compared to a sector average of 200,000–250,000 cells/ml."
 - Objective framing outperforms promotional language in AI search results. Write as an expert, not as a salesperson.
 
+### Inline source attribution — mandatory
+Every specific statistic, percentage, or data point in the body text must be attributed inline at the point of use. Do not save all attribution for the sources block at the bottom.
+
+- **In paragraphs**: attribute directly in the sentence. Examples:
+  - "Fresh grass contains up to 25% more metabolisable energy per kg of dry matter than silage, according to Wageningen University & Research (2022)."
+  - "Independent measurements show the **Lely Sphere** reduces ammonia emissions in the barn by up to 77% on average (Lely, 2023)."
+- **In tables**: add a final row with a single cell labelled "Source:" containing the attribution. Example:
+  - Example table row: "Source: | Wageningen University & Research (2022). Grazing and robotic milking trial data."
+- **Cross-reference with Block 11**: every source cited inline must also appear as a full citation in the SOURCES block at the bottom. The sources block is the bibliography; the inline attributions are the in-text references. They must match.
+
 ### Machine-readable formatting
 - Use bullet lists (li) for itemised features, criteria, symptoms, or risk factors.
 - Use tables for comparisons, cost breakdowns, specifications, or any structured data with two or more variables. Tables must have clear column headers.
