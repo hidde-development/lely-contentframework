@@ -140,7 +140,7 @@ The page follows a deliberate funnel: awareness → problem education → financ
 **BLOCK 3 — KEY TAKEAWAYS** *(GEO priority — critical for AI citation)*
 - type: "label" — "KEY TAKEAWAYS"
 - type: "h2" — "Key takeaways" or more specific variant
-- type: "li" × 5–6 — each a standalone, citation-ready factual statement. Every li MUST contain a specific number, percentage, or verifiable metric. Each li must make sense when read in isolation by an AI. Use authority signals ("Research shows…", "According to…", "Lely data from…") where appropriate. No li may be a vague generalisation.
+- type: "li" × exactly 3 — three short, punchy, standalone facts. Maximum 1 sentence each. Every li MUST contain a specific number, percentage, or verifiable metric. Each li must be independently citable by an AI without surrounding context. No subordinate clauses, no lists within a list, no explanations. If it needs more than one sentence, it is too long.
 
 **BLOCK 4 — BODY TEXT SECTION 1: PROBLEM DEFINITION**
 Role: encyclopedic, citable authority. Answer what the problem is and why it occurs. This section is the foundation that AI engines will quote.
@@ -246,7 +246,7 @@ You will receive the original brief and the full generated page content. Check e
 ### GEO
 - G1: At least 4 H2 headings are phrased as direct user questions
 - G2: The first sentence under every question H2 is a direct factual answer — no preamble, no restated heading, no context-setting
-- G3: Every key takeaway (li in the TAKEAWAYS block) contains a specific number, percentage, or verifiable metric — not a single li may be a vague generalisation
+- G3: The TAKEAWAYS block contains exactly 3 li items — no more, no fewer. Each is a single sentence containing a specific number, percentage, or verifiable metric. Flag any li that runs to more than one sentence or contains no metric.
 - G4: All Lely products are referred to by their full entity name throughout (no "the robot", "our system", "the machine", "the feeder")
 - G5: At least one table is present — mandatory in the problem definition section (Block 4)
 - G6: Key terms and Lely product names are bolded on first meaningful use
@@ -370,7 +370,7 @@ Generate ONLY these blocks in order:
 - Block 0: SEO METADATA (meta_title + meta_desc)
 - Block 1: HERO (label + h1 — frame the farmer's problem as the title, not a product or Lely title)
 - Block 2: INTRODUCTION (label + h2 as a question the farmer is asking right now + p max 4 sentences, acknowledge situation → explain page → promise value)
-- Block 3: KEY TAKEAWAYS (label "KEY TAKEAWAYS" + h2 + 5–6 li items — every li must contain a specific number, percentage, or verifiable metric and be independently citable)
+- Block 3: KEY TAKEAWAYS (label "KEY TAKEAWAYS" + h2 + exactly 3 li items — each a single punchy sentence with a specific number or metric, nothing longer)
 - Block 4: BODY TEXT SECTION 1 — PROBLEM DEFINITION (label + h2 as question about definition/cause + 1–2 p encyclopedic answer + table REQUIRED comparing causes/risk factors/stages + cta)
 - Block 5: BODY TEXT SECTION 2 — FARMER IMPACT (label + h2 as question about cost or operational impact + 1–2 p opening with a specific financial figure + optional table of cost scenarios + cta)
 - Block 6: BODY TEXT SECTION 3 — PREVENTION AND LELY APPROACH (label + h2 as question about prevention/management + 1–2 p contrasting reactive vs preventive approach, introducing Lely product(s) by full entity name with a specific data point + cta)
