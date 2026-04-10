@@ -218,7 +218,23 @@ Cover these 7 question types, in this order:
 **BLOCK 11 — SOURCES** *(GEO priority — E-E-A-T authority signals)*
 - type: "label" — "SOURCES"
 - type: "h2" — "Sources and further reading"
-- type: "source" × 3–5 — plausible, relevant citations. Format: Author/organisation (year). *Title*. Publication or URL. Use: academic research, industry reports, Lely whitepapers, authoritative bodies (Wageningen University, FAO, DairyCo, IDF, etc.). At least one source must be non-Lely.
+- type: "source" × 3–5 — cite only sources from the trusted list below. Do not invent sources. Do not cite institutions or publications you are not certain about. If you are not confident a specific study exists, cite the institution at the level you are certain about (e.g. "Wageningen University & Research" without a specific paper title). Format: Author/organisation (year). Title if known. Publication or URL if known.
+
+TRUSTED SOURCE LIST — only cite from these:
+- Wageningen University & Research (WUR) — animal science, grazing, feed, emissions
+- International Dairy Federation (IDF) — milk quality, SCC, herd health standards
+- Food and Agriculture Organization of the United Nations (FAO) — global dairy, sustainability
+- DairyCo / AHDB Dairy (UK) — herd management, robotic milking benchmarks
+- Teagasc (Ireland) — grazing systems, grass-based dairy
+- Dutch Government / RVO.nl — nitrogen regulation, environmental standards (NL)
+- Lely (own whitepapers, product datasheets, trial reports) — product-specific figures
+- University of Wisconsin — Madison, Cornell University, or Wageningen-affiliated research groups — dairy science
+
+If a statistic cannot be attributed to one of these sources with confidence, rephrase it as an estimate or industry norm rather than a specific citation.
+
+**BLOCK 11B — SOURCE VERIFICATION WARNING**
+Always include this immediately after the SOURCES block, without exception:
+- type: "placeholder" — "[EDITOR: All sources above are AI-generated and must be verified before publication. Check that each cited author, year, and title exists and that the statistic attributed to it is accurate. Do not publish without completing this check.]"
 
 **BLOCK 12 — RELATED BLOGS**
 - type: "related_blog" × exactly 2:
@@ -408,7 +424,8 @@ Generate ONLY these blocks in order:
 - Block 8: RELATED TESTIMONIALS (placeholder element)
 - Block 9: NATURAL CTA (h2 + 1–2 paragraphs, full product entity names in bold)
 - Block 10: FAQ (exactly 7 faq_q + faq_a pairs — cover in order: 1. practical/day-to-day, 2. labour saving with hours saved, 3. financial ROI/payback, 4. herd suitability/barn type, 5. integration with existing systems, 6. regulatory compliance, 7. data ownership and privacy. Each faq_a: first sentence = direct answer, then 1–2 sentences with a specific figure or Lely product reference.)
-- Block 11: SOURCES (label "SOURCES" + h2 "Sources and further reading" + 3–5 source elements with author, year, title)
+- Block 11: SOURCES (label "SOURCES" + h2 "Sources and further reading" + 3–5 source elements — only from the trusted source list in the system prompt; if uncertain about a specific study, cite the institution without a title rather than inventing one)
+- Block 11B: SOURCE VERIFICATION WARNING (a placeholder element reminding the editor to verify all sources before publication — always include this)
 - Block 12: RELATED BLOGS (exactly 2 related_blog elements)
 - Block 13: RELATED PRODUCTS (placeholder element)
 
