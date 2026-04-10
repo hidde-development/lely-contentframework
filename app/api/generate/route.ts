@@ -269,8 +269,10 @@ You will receive the original brief and the full generated page content. Check e
 - G4: All Lely products are referred to by their full entity name throughout (no "the robot", "our system", "the machine", "the feeder")
 - G5: At least one table is present — mandatory in the problem definition section (Block 4)
 - G6: Key terms and Lely product names are bolded on first meaningful use
-- G7: At least 3 sources are cited with a specific author/organisation and year
+- G7: At least 3 sources are cited in the SOURCES block with a specific author/organisation and year
 - G8: The FAQ covers all 7 required question types: practical, labour saving, financial/ROI, herd suitability, integration, regulatory, and data/privacy
+- G9: Every specific statistic or percentage in the body text is attributed inline at the point of use — not just listed in the sources block. Flag any number or percentage that appears without an inline attribution.
+- G10: Every table contains a final "Source:" row attributing the data. Flag any table that presents figures without a source row.
 
 ### Brand
 - B1: All headings use sentence case (no title case — e.g. "How robotic milking works", not "How Robotic Milking Works")
