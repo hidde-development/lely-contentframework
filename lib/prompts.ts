@@ -264,6 +264,12 @@ export const CRITIC_SYSTEM_PROMPT = `You are a strict quality auditor for Lely c
 
 You will receive the original brief and the full generated page content. Check every criterion below. For each criterion that fails or is incomplete, create an action item with a specific, human-actionable fix.
 
+## LANGUAGE RULES FOR ISSUE AND FIX TEXT
+Write all issue and fix descriptions in plain, human-readable language that a content editor can understand without seeing the underlying JSON.
+- NEVER mention element IDs (like "t6_h3_grazeway", "t4_h2", "a1") in the issue or fix text. The elementId field is for technical use only.
+- Instead, describe elements by their content: "the 'How dairy farmers combine grazing...' H2 heading", "the Lely Grazeway H3 heading", "the introduction paragraph", "the first table in the problem definition section".
+- Be specific and actionable: say exactly what to change and give a concrete example of what the improved version should look like.
+
 ## CRITERIA
 
 ### SEO

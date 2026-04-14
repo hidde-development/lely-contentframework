@@ -101,11 +101,16 @@ Questions to answer: ${input.questions || "None"}`;
     const fixPrompt = `You are making surgical fixes to specific elements of a published Lely CMS page.
 
 STRICT RULES:
-- Fix ONLY the elements provided below. Every other element must remain exactly as-is.
-- Return a JSON object with a "text" array containing ONLY the corrected elements, with the exact same IDs and types.
-- Do not rewrite, restructure, add, or remove any element not listed here.
+- Fix ONLY the elements and issues listed below. Every other element must remain exactly as-is.
 - Apply all brand and quality rules from the system prompt.
 - Do not introduce new problems while fixing existing ones.
+
+RETURN FORMAT — a JSON object with two optional fields:
+1. "text": array of corrected existing elements (same IDs and types, modified content)
+2. "insertAfter": array of insertion instructions for fixes that require adding NEW elements (e.g. adding a direct-answer paragraph under a question H2). Format:
+   { "afterId": "the-existing-element-id", "elements": [{ "id": "new_descriptive_id", "type": "p", "content": "..." }] }
+
+Only include "insertAfter" if a fix genuinely requires a new element. Use descriptive IDs prefixed with "ins_" for new elements.
 
 ${sharedContext}
 
@@ -127,15 +132,29 @@ ${fixInstructions}`;
         throw new Error("Unexpected response from fix call");
       }
 
-      const fixResult = parseJSON<{ text: GeneratedContent["text"] }>(
-        fixMsg.content[0].text,
-        "Surgical fix"
-      );
+      const fixResult = parseJSON<{
+        text?: GeneratedContent["text"];
+        insertAfter?: { afterId: string; elements: GeneratedContent["text"] }[];
+      }>(fixMsg.content[0].text, "Surgical fix");
 
-      // Merge: replace fixed elements, keep everything else unchanged
+      // Step 1: replace modified elements in-place
       const fixedById: Record<string, GeneratedContent["text"][number]> = {};
-      fixResult.text.forEach((el) => { fixedById[el.id] = el; });
-      newText = text.map((el) => fixedById[el.id] ?? el);
+      (fixResult.text ?? []).forEach((el) => { fixedById[el.id] = el; });
+      let merged = text.map((el) => fixedById[el.id] ?? el);
+
+      // Step 2: insert new elements after their anchor element
+      for (const insertion of fixResult.insertAfter ?? []) {
+        const idx = merged.findIndex((el) => el.id === insertion.afterId);
+        if (idx >= 0) {
+          merged = [
+            ...merged.slice(0, idx + 1),
+            ...insertion.elements,
+            ...merged.slice(idx + 1),
+          ];
+        }
+      }
+
+      newText = merged;
 
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -167,21 +186,33 @@ ${JSON.stringify(newText, null, 2)}`;
 
     const newQuality = parseJSON<QualityReport>(criticMsg.content[0].text, "Quality audit (regenerate)");
 
-    // How many issues were resolved: compare action count before vs. after
-    const resolvedCount = Math.max(0, quality.actions.length - newQuality.actions.length);
+    // Only keep issues whose criterion code existed in the original report.
+    // This prevents the critic from introducing brand-new issues after regeneration.
+    const originalCriteria = new Set(quality.actions.map((a) => a.criterion));
+    const filteredActions = newQuality.actions.filter((a) => originalCriteria.has(a.criterion));
 
-    // Scores never decrease after regeneration — take the best of before/after
-    // per category. The fix targeted specific elements; any new issues found by
-    // the critic on unchanged elements are LLM noise, not real regressions.
+    // How many issues were resolved: compare filtered count vs. original
+    const resolvedCount = Math.max(0, quality.actions.length - filteredActions.length);
+
+    // Recalculate scores from filtered actions using the same weighted rubric.
+    // This gives accurate scores that only reflect remaining original-criterion issues.
+    // Scores can never go below pre-regeneration values.
+    const SCORE_TABLE = [100, 95, 88, 80, 72, 64, 55, 46, 38, 30, 22, 15, 8];
+    function calcScore(actions: typeof filteredActions, category: string): number {
+      const pts = actions
+        .filter((a) => a.category === category)
+        .reduce((sum, a) => sum + (a.severity === "high" ? 3 : a.severity === "medium" ? 2 : 1), 0);
+      return pts >= SCORE_TABLE.length ? 8 : SCORE_TABLE[pts];
+    }
     const scores = {
-      seo:      Math.max(quality.scores.seo,      newQuality.scores.seo),
-      geo:      Math.max(quality.scores.geo,      newQuality.scores.geo),
-      brand:    Math.max(quality.scores.brand,    newQuality.scores.brand),
-      strategy: Math.max(quality.scores.strategy, newQuality.scores.strategy),
+      seo:      Math.max(quality.scores.seo,      calcScore(filteredActions, "seo")),
+      geo:      Math.max(quality.scores.geo,      calcScore(filteredActions, "geo")),
+      brand:    Math.max(quality.scores.brand,    calcScore(filteredActions, "brand")),
+      strategy: Math.max(quality.scores.strategy, calcScore(filteredActions, "strategy")),
     };
 
     // All remaining actions are for human review only — no second automated pass
-    const humanOnlyActions = newQuality.actions.map((a) => ({ ...a, humanOnly: true }));
+    const humanOnlyActions = filteredActions.map((a) => ({ ...a, humanOnly: true }));
 
     return NextResponse.json({
       text: newText,
