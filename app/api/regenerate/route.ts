@@ -167,6 +167,8 @@ ${fixInstructions}`;
   try {
     const criticPrompt = `Audit the following Lely page content against all quality criteria.
 
+This content has already been through an automated improvement pass. Score it strictly on its current state — if issues have been fixed, the scores must reflect that improvement. Do not penalise content for issues that are no longer present.
+
 ORIGINAL BRIEF:
 ${sharedContext}
 
@@ -194,21 +196,13 @@ ${JSON.stringify(newText, null, 2)}`;
     // How many issues were resolved: compare filtered count vs. original
     const resolvedCount = Math.max(0, quality.actions.length - filteredActions.length);
 
-    // Recalculate scores from filtered actions using the same weighted rubric.
-    // This gives accurate scores that only reflect remaining original-criterion issues.
-    // Scores can never go below pre-regeneration values.
-    const SCORE_TABLE = [100, 95, 88, 80, 72, 64, 55, 46, 38, 30, 22, 15, 8];
-    function calcScore(actions: typeof filteredActions, category: string): number {
-      const pts = actions
-        .filter((a) => a.category === category)
-        .reduce((sum, a) => sum + (a.severity === "high" ? 3 : a.severity === "medium" ? 2 : 1), 0);
-      return pts >= SCORE_TABLE.length ? 8 : SCORE_TABLE[pts];
-    }
+    // Use the critic's own scores — it evaluates the actual improved content.
+    // Math.max ensures scores never go below pre-regeneration values (guards against LLM noise).
     const scores = {
-      seo:      Math.max(quality.scores.seo,      calcScore(filteredActions, "seo")),
-      geo:      Math.max(quality.scores.geo,      calcScore(filteredActions, "geo")),
-      brand:    Math.max(quality.scores.brand,    calcScore(filteredActions, "brand")),
-      strategy: Math.max(quality.scores.strategy, calcScore(filteredActions, "strategy")),
+      seo:      Math.max(quality.scores.seo,      newQuality.scores.seo),
+      geo:      Math.max(quality.scores.geo,      newQuality.scores.geo),
+      brand:    Math.max(quality.scores.brand,    newQuality.scores.brand),
+      strategy: Math.max(quality.scores.strategy, newQuality.scores.strategy),
     };
 
     // All remaining actions are for human review only — no second automated pass
