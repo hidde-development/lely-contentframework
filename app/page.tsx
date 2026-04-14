@@ -10,7 +10,9 @@ import type { GenerateInput, GeneratedContent } from "@/lib/types";
 export default function Home() {
   const [content, setContent] = useState<GeneratedContent | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastInput, setLastInput] = useState<GenerateInput | null>(null);
 
   // Single shared state: which element ID is currently active (from either panel)
   const [activeElementId, setActiveElementId] = useState<string | null>(null);
@@ -20,6 +22,7 @@ export default function Home() {
     setError(null);
     setContent(null);
     setActiveElementId(null);
+    setLastInput(input);
 
     try {
       const res = await fetch("/api/generate", {
@@ -39,6 +42,33 @@ export default function Home() {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function handleRegenerate() {
+    if (!content || !lastInput) return;
+    setIsRegenerating(true);
+    setError(null);
+    setActiveElementId(null);
+
+    try {
+      const res = await fetch("/api/regenerate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input: lastInput, text: content.text, quality: content.quality }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Regeneration failed");
+      }
+
+      const data: GeneratedContent = await res.json();
+      setContent(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setIsRegenerating(false);
     }
   }
 
@@ -65,11 +95,11 @@ export default function Home() {
         )}
       </header>
 
-      <ProgressBar isLoading={isLoading} />
+      <ProgressBar isLoading={isLoading || isRegenerating} />
 
       {/* Three-panel layout */}
       <div className="flex-1 flex overflow-hidden">
-        <InputPanel onGenerate={handleGenerate} isLoading={isLoading} />
+        <InputPanel onGenerate={handleGenerate} isLoading={isLoading || isRegenerating} />
         <TextPanel
           elements={content?.text ?? []}
           activeElementId={activeElementId}
@@ -79,6 +109,8 @@ export default function Home() {
           quality={content?.quality ?? null}
           activeElementId={activeElementId}
           onActionHover={setActiveElementId}
+          onRegenerate={handleRegenerate}
+          isRegenerating={isRegenerating}
         />
       </div>
     </div>

@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import type { GenerateInput, GeneratedContent, QualityReport } from "@/lib/types";
+import type { GeneratedContent, QualityReport, RegenerateInput } from "@/lib/types";
 import { SYSTEM_PROMPT, CRITIC_SYSTEM_PROMPT, parseJSON } from "@/lib/prompts";
 
-// Supports multiple common Vercel env var names for the Anthropic API key
 const apiKey =
   process.env.Claude ||
   process.env.ANTHROPIC_API_KEY ||
@@ -12,9 +11,9 @@ const apiKey =
 const client = new Anthropic({ apiKey });
 
 export async function POST(request: NextRequest) {
-  const input: GenerateInput = await request.json();
+  const { input, text: previousText, quality }: RegenerateInput = await request.json();
 
-  // Build keyword context with volumes
+  // Build keyword context (same as generate route)
   const keywordContext = input.keywords && input.keywords.length > 0
     ? input.keywords.map((k) => {
         const vol = k.volume !== null ? ` (${k.volume.toLocaleString("en-GB")} searches/mo)` : "";
@@ -40,11 +39,32 @@ ${productContext}
 Additional instructions: ${input.instructions || "None"}
 Questions to answer: ${input.questions || "None"}`;
 
+  // Format critic actions as explicit improvement instructions
+  const criticFeedback = quality.actions.length > 0
+    ? `CRITIC FEEDBACK FROM PREVIOUS VERSION — fix every one of these issues in the new version:\n` +
+      quality.actions
+        .sort((a, b) => {
+          const order = { high: 0, medium: 1, low: 2 };
+          return order[a.severity] - order[b.severity];
+        })
+        .map((a) => `- [${a.severity.toUpperCase()} / ${a.criterion}] ${a.issue} → FIX: ${a.fix}`)
+        .join("\n")
+    : "The previous version had no critic issues. Maintain the same quality and improve where you can.";
+
   try {
-    // ── Call 1: blocks 0–7 (META → BODY 3) ───────────────────────────────────
-    const prompt1 = `Generate blocks 0–7 of the Lely CMS page template as a JSON object with a "text" array.
+    // ── Call 1: blocks 0–7 ────────────────────────────────────────────────────
+    const prompt1 = `Generate an improved version of blocks 0–7 of the Lely CMS page template as a JSON object with a "text" array.
 
 ${sharedContext}
+
+${criticFeedback}
+
+PREVIOUS VERSION (for reference — do not copy, only improve):
+${JSON.stringify(previousText.filter((_, i) => {
+  // Only send blocks 0-7 elements as reference (roughly first 60% of elements)
+  const splitIndex = Math.ceil(previousText.length * 0.6);
+  return i < splitIndex;
+}), null, 2)}
 
 Generate ONLY these blocks in order:
 - Block 0: SEO METADATA (meta_title + meta_desc)
@@ -58,10 +78,18 @@ Generate ONLY these blocks in order:
 
 Apply ALL mandatory rules from the system prompt. The table in Block 4 is mandatory. Blocks 4–6 must form a logical funnel: problem → cost → prevention.`;
 
-    // ── Call 2: blocks 8–13 (TESTIMONIAL → PRODUCTS) ─────────────────────────
-    const prompt2 = `Generate blocks 8–13 of the Lely CMS page template as a JSON object with a "text" array. Use element IDs starting from t50.
+    // ── Call 2: blocks 8–13 ───────────────────────────────────────────────────
+    const prompt2 = `Generate an improved version of blocks 8–13 of the Lely CMS page template as a JSON object with a "text" array. Use element IDs starting from t50.
 
 ${sharedContext}
+
+${criticFeedback}
+
+PREVIOUS VERSION (for reference — do not copy, only improve):
+${JSON.stringify(previousText.filter((_, i) => {
+  const splitIndex = Math.ceil(previousText.length * 0.6);
+  return i >= splitIndex;
+}), null, 2)}
 
 Generate ONLY these blocks in order:
 - Block 8: RELATED TESTIMONIALS (placeholder element)
@@ -92,11 +120,11 @@ Apply ALL mandatory rules from the system prompt.`;
       return NextResponse.json({ error: "Unexpected response from Claude" }, { status: 500 });
     }
 
-    const part1 = parseJSON<{ text: GeneratedContent["text"] }>(msg1.content[0].text, "Text call 1 (blocks 0-7)");
-    const part2 = parseJSON<{ text: GeneratedContent["text"] }>(msg2.content[0].text, "Text call 2 (blocks 8-13)");
+    const part1 = parseJSON<{ text: GeneratedContent["text"] }>(msg1.content[0].text, "Regenerate call 1 (blocks 0-7)");
+    const part2 = parseJSON<{ text: GeneratedContent["text"] }>(msg2.content[0].text, "Regenerate call 2 (blocks 8-13)");
     const allText = [...part1.text, ...part2.text];
 
-    // ── Call 3: quality audit ─────────────────────────────────────────────────
+    // ── Call 3: quality audit on the new version ──────────────────────────────
     const criticPrompt = `Audit the following Lely page content against all quality criteria.
 
 ORIGINAL BRIEF:
@@ -116,13 +144,13 @@ ${JSON.stringify(allText, null, 2)}`;
       return NextResponse.json({ error: "Unexpected response from quality audit" }, { status: 500 });
     }
 
-    const qualityData = parseJSON<QualityReport>(msg3.content[0].text, "Quality audit");
+    const qualityData = parseJSON<QualityReport>(msg3.content[0].text, "Quality audit (regenerate)");
 
     return NextResponse.json({ text: allText, quality: qualityData });
 
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error("Claude API error:", message);
-    return NextResponse.json({ error: `Generation failed: ${message}` }, { status: 500 });
+    console.error("Regenerate API error:", message);
+    return NextResponse.json({ error: `Regeneration failed: ${message}` }, { status: 500 });
   }
 }

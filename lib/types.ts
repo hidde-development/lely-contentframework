@@ -97,3 +97,9 @@ export interface GenerateInput {
   instructions: string;
   questions: string;
 }
+
+export interface RegenerateInput {
+  input: GenerateInput;
+  text: TextElement[];
+  quality: QualityReport;
+}

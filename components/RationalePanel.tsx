@@ -7,6 +7,8 @@ interface QualityPanelProps {
   quality: QualityReport | null;
   activeElementId: string | null;
   onActionHover: (elementId: string | null) => void;
+  onRegenerate: () => void;
+  isRegenerating: boolean;
 }
 
 type Tab = "all" | QualityCategory;
@@ -94,7 +96,7 @@ function EmptyState() {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export default function QualityPanel({ quality, activeElementId, onActionHover }: QualityPanelProps) {
+export default function QualityPanel({ quality, activeElementId, onActionHover, onRegenerate, isRegenerating }: QualityPanelProps) {
   const [activeTab, setActiveTab] = useState<Tab>("all");
   const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
@@ -142,11 +144,37 @@ export default function QualityPanel({ quality, activeElementId, onActionHover }
         </p>
 
         {/* Score cards */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 mb-3">
           {(Object.entries(quality.scores) as [QualityCategory, number][]).map(([cat, score]) => (
             <ScoreCard key={cat} category={cat} score={score} />
           ))}
         </div>
+
+        {/* Regenerate button */}
+        {quality.actions.length > 0 && (
+          <button
+            onClick={onRegenerate}
+            disabled={isRegenerating}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold bg-gray-800 text-white hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {isRegenerating ? (
+              <>
+                <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
+                </svg>
+                Regenerating…
+              </>
+            ) : (
+              <>
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Regenerate with critic feedback
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Tabs */}
