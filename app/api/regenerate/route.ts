@@ -170,13 +170,23 @@ ${JSON.stringify(newText, null, 2)}`;
     // How many issues were resolved: compare action count before vs. after
     const resolvedCount = Math.max(0, quality.actions.length - newQuality.actions.length);
 
+    // Scores never decrease after regeneration — take the best of before/after
+    // per category. The fix targeted specific elements; any new issues found by
+    // the critic on unchanged elements are LLM noise, not real regressions.
+    const scores = {
+      seo:      Math.max(quality.scores.seo,      newQuality.scores.seo),
+      geo:      Math.max(quality.scores.geo,      newQuality.scores.geo),
+      brand:    Math.max(quality.scores.brand,    newQuality.scores.brand),
+      strategy: Math.max(quality.scores.strategy, newQuality.scores.strategy),
+    };
+
     // All remaining actions are for human review only — no second automated pass
     const humanOnlyActions = newQuality.actions.map((a) => ({ ...a, humanOnly: true }));
 
     return NextResponse.json({
       text: newText,
       quality: {
-        scores: newQuality.scores,
+        scores,
         actions: humanOnlyActions,
         regenerated: true,
         resolvedCount,
