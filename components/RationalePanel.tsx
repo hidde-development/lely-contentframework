@@ -150,8 +150,32 @@ export default function QualityPanel({ quality, activeElementId, onActionHover, 
           ))}
         </div>
 
-        {/* Regenerate button */}
-        {quality.actions.length > 0 && (
+        {/* Regenerated banner */}
+        {quality.regenerated && (
+          <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2.5">
+            <div className="flex items-center gap-2 mb-0.5">
+              <svg className="w-3.5 h-3.5 text-green-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <span className="text-xs font-semibold text-green-700">
+                {quality.resolvedCount && quality.resolvedCount > 0
+                  ? `${quality.resolvedCount} issue${quality.resolvedCount > 1 ? "s" : ""} resolved automatically`
+                  : "Regeneration complete"}
+              </span>
+            </div>
+            {quality.actions.length > 0 && (
+              <p className="text-xs text-green-600 pl-5">
+                {quality.actions.length} remaining issue{quality.actions.length > 1 ? "s" : ""} require manual editing
+              </p>
+            )}
+            {quality.actions.length === 0 && (
+              <p className="text-xs text-green-600 pl-5">All issues resolved — ready for review</p>
+            )}
+          </div>
+        )}
+
+        {/* Regenerate button — hidden after first regeneration */}
+        {!quality.regenerated && quality.actions.length > 0 && (
           <button
             onClick={onRegenerate}
             disabled={isRegenerating}
@@ -163,14 +187,14 @@ export default function QualityPanel({ quality, activeElementId, onActionHover, 
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
                 </svg>
-                Regenerating…
+                Fixing issues…
               </>
             ) : (
               <>
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
-                Regenerate with critic feedback
+                Fix issues automatically
               </>
             )}
           </button>
@@ -228,7 +252,7 @@ export default function QualityPanel({ quality, activeElementId, onActionHover, 
                   isHighlighted ? "bg-yellow-50 border-yellow-300 shadow-sm" : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm"
                 }`}
               >
-                {/* Top row: severity + category + criterion */}
+                {/* Top row: severity + category + criterion + human-only badge */}
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <span className="flex items-center gap-1.5 text-xs font-medium text-gray-500">
                     <span className={`w-2 h-2 rounded-full shrink-0 ${sevStyle.dot}`}></span>
@@ -237,6 +261,11 @@ export default function QualityPanel({ quality, activeElementId, onActionHover, 
                   <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${catStyle.badge}`}>
                     {action.category.charAt(0).toUpperCase() + action.category.slice(1)}
                   </span>
+                  {action.humanOnly && (
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 border border-orange-200">
+                      Manual edit
+                    </span>
+                  )}
                   <span className="text-xs font-mono font-bold text-gray-400 ml-auto">{action.criterion}</span>
                 </div>
 

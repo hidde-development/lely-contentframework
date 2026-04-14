@@ -11,9 +11,9 @@ const apiKey =
 const client = new Anthropic({ apiKey });
 
 export async function POST(request: NextRequest) {
-  const { input, text: previousText, quality }: RegenerateInput = await request.json();
+  const { input, text, quality }: RegenerateInput = await request.json();
 
-  // Build keyword context (same as generate route)
+  // Build shared context (same as generate route)
   const keywordContext = input.keywords && input.keywords.length > 0
     ? input.keywords.map((k) => {
         const vol = k.volume !== null ? ` (${k.volume.toLocaleString("en-GB")} searches/mo)` : "";
@@ -39,118 +39,111 @@ ${productContext}
 Additional instructions: ${input.instructions || "None"}
 Questions to answer: ${input.questions || "None"}`;
 
-  // Format critic actions as explicit improvement instructions
-  const criticFeedback = quality.actions.length > 0
-    ? `CRITIC FEEDBACK FROM PREVIOUS VERSION — fix every one of these issues in the new version:\n` +
-      quality.actions
-        .sort((a, b) => {
-          const order = { high: 0, medium: 1, low: 2 };
-          return order[a.severity] - order[b.severity];
-        })
-        .map((a) => `- [${a.severity.toUpperCase()} / ${a.criterion}] ${a.issue} → FIX: ${a.fix}`)
-        .join("\n")
-    : "The previous version had no critic issues. Maintain the same quality and improve where you can.";
+  // ── Surgical fix: only touch elements flagged by the critic ────────────────
+  // Actions with an elementId can be fixed automatically.
+  // Actions without an elementId are structural/page-level — left for human review.
+  const elementActions = quality.actions.filter((a) => a.elementId);
 
-  try {
-    // ── Call 1: blocks 0–7 ────────────────────────────────────────────────────
-    const prompt1 = `Generate an improved version of blocks 0–7 of the Lely CMS page template as a JSON object with a "text" array.
+  let newText = text;
 
-${sharedContext}
+  if (elementActions.length > 0) {
+    const idsToFix = [...new Set(elementActions.map((a) => a.elementId!))];
+    const elementsToFix = text.filter((el) => idsToFix.includes(el.id));
 
-${criticFeedback}
+    const fixInstructions = elementActions
+      .map((a) =>
+        `\n[Element ID: ${a.elementId}] Criterion ${a.criterion} (${a.severity})\nIssue: ${a.issue}\nFix: ${a.fix}`
+      )
+      .join("\n");
 
-PREVIOUS VERSION (for reference — do not copy, only improve):
-${JSON.stringify(previousText.filter((_, i) => {
-  // Only send blocks 0-7 elements as reference (roughly first 60% of elements)
-  const splitIndex = Math.ceil(previousText.length * 0.6);
-  return i < splitIndex;
-}), null, 2)}
+    const fixPrompt = `You are making surgical fixes to specific elements of a published Lely CMS page.
 
-Generate ONLY these blocks in order:
-- Block 0: SEO METADATA (meta_title + meta_desc)
-- Block 1: HERO (label + h1 — frame the farmer's problem as the title, not a product or Lely title)
-- Block 2: KEY TAKEAWAYS (label "KEY TAKEAWAYS" + h2 + exactly 3 li items — each a single punchy sentence with a specific number or metric, nothing longer)
-- Block 3: INTRODUCTION (label + h2 as a question the farmer is asking right now + p max 4 sentences, acknowledge situation → explain page → promise value)
-- Block 4: BODY TEXT SECTION 1 — PROBLEM DEFINITION (label + h2 as question about definition/cause + 1–2 p encyclopedic answer + table REQUIRED comparing causes/risk factors/stages + cta)
-- Block 5: BODY TEXT SECTION 2 — FARMER IMPACT (label + h2 as question about cost or operational impact + 1–2 p opening with a specific financial figure + optional table of cost scenarios + cta)
-- Block 6: BODY TEXT SECTION 3 — PREVENTION AND LELY APPROACH (label + h2 as question about prevention/management + for EACH featured product: h3 with product name + benefit phrase linking to this topic, then p of exactly 4 sentences: 1. what the product is and its role in this topic, 2. how it addresses the specific problem, 3. specific data point or measurable outcome, 4. concrete farmer benefit in cost/time/welfare + cta)
-- Block 7: USP LIST BLOCK (label + h2 as question introducing why farmers choose this Lely solution + exactly 4 usp elements: content = 1–2 word benefit heading, meta.description = specific fact or figure proving the benefit)
-
-Apply ALL mandatory rules from the system prompt. The table in Block 4 is mandatory. Blocks 4–6 must form a logical funnel: problem → cost → prevention.`;
-
-    // ── Call 2: blocks 8–13 ───────────────────────────────────────────────────
-    const prompt2 = `Generate an improved version of blocks 8–13 of the Lely CMS page template as a JSON object with a "text" array. Use element IDs starting from t50.
+STRICT RULES:
+- Fix ONLY the elements provided below. Every other element must remain exactly as-is.
+- Return a JSON object with a "text" array containing ONLY the corrected elements, with the exact same IDs and types.
+- Do not rewrite, restructure, add, or remove any element not listed here.
+- Apply all brand and quality rules from the system prompt.
+- Do not introduce new problems while fixing existing ones.
 
 ${sharedContext}
 
-${criticFeedback}
+ELEMENTS TO FIX (current content):
+${JSON.stringify(elementsToFix, null, 2)}
 
-PREVIOUS VERSION (for reference — do not copy, only improve):
-${JSON.stringify(previousText.filter((_, i) => {
-  const splitIndex = Math.ceil(previousText.length * 0.6);
-  return i >= splitIndex;
-}), null, 2)}
+FIX INSTRUCTIONS (one per element):
+${fixInstructions}`;
 
-Generate ONLY these blocks in order:
-- Block 8: RELATED TESTIMONIALS (placeholder element)
-- Block 9: FAQ (exactly 7 faq_q + faq_a pairs — cover in order: 1. practical/day-to-day, 2. labour saving with hours saved, 3. financial ROI/payback, 4. herd suitability/barn type, 5. integration with existing systems, 6. regulatory compliance, 7. data ownership and privacy. Each faq_a: first sentence = direct answer, then 1–2 sentences with a specific figure or Lely product reference.)
-- Block 11: SOURCES (label "SOURCES" + h2 "Sources and further reading" + 3–5 source elements — only from the trusted source list in the system prompt; if uncertain about a specific study, cite the institution without a title rather than inventing one)
-- Block 11B: SOURCE VERIFICATION WARNING (a placeholder element reminding the editor to verify all sources before publication — always include this)
-- Block 12: RELATED BLOGS (exactly 3 related_blog elements)
-- Block 13: RELATED PRODUCTS (placeholder element)
-
-Apply ALL mandatory rules from the system prompt.`;
-
-    const [msg1, msg2] = await Promise.all([
-      client.messages.create({
+    try {
+      const fixMsg = await client.messages.create({
         model: "claude-sonnet-4-6",
-        max_tokens: 16000,
-        messages: [{ role: "user", content: prompt1 }],
+        max_tokens: 6000,
+        messages: [{ role: "user", content: fixPrompt }],
         system: SYSTEM_PROMPT,
-      }),
-      client.messages.create({
-        model: "claude-sonnet-4-6",
-        max_tokens: 16000,
-        messages: [{ role: "user", content: prompt2 }],
-        system: SYSTEM_PROMPT,
-      }),
-    ]);
+      });
 
-    if (msg1.content[0].type !== "text" || msg2.content[0].type !== "text") {
-      return NextResponse.json({ error: "Unexpected response from Claude" }, { status: 500 });
+      if (fixMsg.content[0].type !== "text") {
+        throw new Error("Unexpected response from fix call");
+      }
+
+      const fixResult = parseJSON<{ text: GeneratedContent["text"] }>(
+        fixMsg.content[0].text,
+        "Surgical fix"
+      );
+
+      // Merge: replace fixed elements, keep everything else unchanged
+      const fixedById: Record<string, GeneratedContent["text"][number]> = {};
+      fixResult.text.forEach((el) => { fixedById[el.id] = el; });
+      newText = text.map((el) => fixedById[el.id] ?? el);
+
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error("Surgical fix error:", message);
+      // Fall through with original text — still run the critic
     }
+  }
 
-    const part1 = parseJSON<{ text: GeneratedContent["text"] }>(msg1.content[0].text, "Regenerate call 1 (blocks 0-7)");
-    const part2 = parseJSON<{ text: GeneratedContent["text"] }>(msg2.content[0].text, "Regenerate call 2 (blocks 8-13)");
-    const allText = [...part1.text, ...part2.text];
-
-    // ── Call 3: quality audit on the new version ──────────────────────────────
+  // ── Full critic run on the improved content ────────────────────────────────
+  try {
     const criticPrompt = `Audit the following Lely page content against all quality criteria.
 
 ORIGINAL BRIEF:
 ${sharedContext}
 
 GENERATED CONTENT:
-${JSON.stringify(allText, null, 2)}`;
+${JSON.stringify(newText, null, 2)}`;
 
-    const msg3 = await client.messages.create({
+    const criticMsg = await client.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 8000,
       messages: [{ role: "user", content: criticPrompt }],
       system: CRITIC_SYSTEM_PROMPT,
     });
 
-    if (msg3.content[0].type !== "text") {
-      return NextResponse.json({ error: "Unexpected response from quality audit" }, { status: 500 });
+    if (criticMsg.content[0].type !== "text") {
+      throw new Error("Unexpected response from critic");
     }
 
-    const qualityData = parseJSON<QualityReport>(msg3.content[0].text, "Quality audit (regenerate)");
+    const newQuality = parseJSON<QualityReport>(criticMsg.content[0].text, "Quality audit (regenerate)");
 
-    return NextResponse.json({ text: allText, quality: qualityData });
+    // How many issues were resolved: compare action count before vs. after
+    const resolvedCount = Math.max(0, quality.actions.length - newQuality.actions.length);
+
+    // All remaining actions are for human review only — no second automated pass
+    const humanOnlyActions = newQuality.actions.map((a) => ({ ...a, humanOnly: true }));
+
+    return NextResponse.json({
+      text: newText,
+      quality: {
+        scores: newQuality.scores,
+        actions: humanOnlyActions,
+        regenerated: true,
+        resolvedCount,
+      },
+    });
 
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error("Regenerate API error:", message);
+    console.error("Regenerate critic error:", message);
     return NextResponse.json({ error: `Regeneration failed: ${message}` }, { status: 500 });
   }
 }

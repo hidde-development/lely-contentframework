@@ -59,11 +59,17 @@ export interface ActionItem {
   issue: string;
   /** Specific instruction for the human editor to fix it */
   fix: string;
+  /** True when this issue remains after the automated regeneration pass — requires manual editing */
+  humanOnly?: boolean;
 }
 
 export interface QualityReport {
   scores: Record<QualityCategory, number>; // 0–100
   actions: ActionItem[];
+  /** True after a regeneration pass has been run */
+  regenerated?: boolean;
+  /** Number of issues resolved by the regeneration pass */
+  resolvedCount?: number;
 }
 
 export interface GeneratedContent {
