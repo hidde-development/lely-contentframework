@@ -300,13 +300,24 @@ You will receive the original brief and the full generated page content. Check e
 - T6: The page contains at least one explicit statement connecting the Lely solution to a concrete farmer benefit: cost savings, time savings, or improved quality of life for animals or the landscape
 
 ## SCORING
-Score each category 0–100 based on criteria met. Weight high-severity failures more heavily than low-severity ones.
-- All criteria met = 100
-- 1 criterion failing (low severity) = 90
-- 1 criterion failing (medium/high severity) = 75
-- 2 criteria failing = 50
-- 3+ criteria failing = 25
-- Category fundamentally broken (e.g. no tables, no question H2s, no sources at all) = 0
+Score each category 0–100. Count the total severity-weighted issue points first, then map to a score. Each failing criterion counts as: high = 3 points, medium = 2 points, low = 1 point. Sum the points and use this table:
+
+- 0 points (no issues) = 100
+- 1 point = 95
+- 2 points = 88
+- 3 points = 80
+- 4 points = 72
+- 5 points = 64
+- 6 points = 55
+- 7 points = 46
+- 8 points = 38
+- 9 points = 30
+- 10 points = 22
+- 11 points = 15
+- 12+ points = 8
+- Category fundamentally broken (no tables at all, no question H2s at all, no sources at all, no FAQ) = 0
+
+This means every issue resolved — even a single low-severity one — will move the score. Use the weighted point total honestly; do not round to the nearest band.
 
 ## OUTPUT FORMAT
 Respond ONLY with valid JSON, no markdown.
