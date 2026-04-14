@@ -367,18 +367,15 @@ function SourcesSection({ items, activeId, onHover }: { items: TextElement[]; ac
 }
 
 function RelatedBlogsSection({ items, activeId, onHover }: { items: TextElement[]; activeId: string | null; onHover: (id: string | null) => void }) {
+  const count = items.length || 3;
   return (
     <div className="my-6">
       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Related blogs</p>
       <div className="space-y-2">
-        {items.map((el) => (
-          <div key={el.id} onMouseEnter={() => onHover(el.id)} onMouseLeave={() => onHover(null)}
-            className={`rounded-xl border border-gray-200 p-4 cursor-default transition-all ${hoverCls(el.id, activeId)}`}>
-            <p className="text-sm font-semibold text-gray-800 mb-1">{el.content}</p>
-            {el.meta?.description && <p className="text-xs text-gray-500 leading-relaxed">{el.meta.description}</p>}
-            <span className="mt-2 inline-flex items-center gap-1 text-xs bg-amber-100 text-amber-700 border border-amber-200 rounded px-1.5 py-0.5 font-medium">
-              CMS placeholder — add actual link
-            </span>
+        {Array.from({ length: count }).map((_, i) => (
+          <div key={i}
+            className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4">
+            <p className="text-xs text-gray-400 italic">[PLACEHOLDER: Add article from same project]</p>
           </div>
         ))}
       </div>

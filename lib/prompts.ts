@@ -233,10 +233,8 @@ Always include this immediately after the SOURCES block, without exception:
 - type: "placeholder" — "[EDITOR: All sources above are AI-generated and must be verified before publication. Check that each cited author, year, and title exists and that the statistic attributed to it is accurate. Do not publish without completing this check.]"
 
 **BLOCK 12 — RELATED BLOGS**
-Purpose: link to three or four related articles within this topic cluster. Strengthens internal linking, keeps the farmer engaged, and signals topical depth to search engines.
-- type: "related_blog" × exactly 3:
-  - content = proposed blog title (sentence case, max 8 words, phrased to address a follow-on question the farmer will have after reading this page)
-  - meta.description = one-sentence summary of the blog's unique angle
+Purpose: link to related articles within this topic cluster. These will be filled in by the editor from the existing content project.
+- type: "placeholder" — "[PLACEHOLDER: Add 3 related articles from the same content project here. Find in CMS → Articles.]"
 
 **BLOCK 13 — RELATED PRODUCTS**
 Purpose: direct product discovery for the farmer who is ready to act. Always link to the products that were introduced in Block 6 and Block 9.
