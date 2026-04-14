@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { GenerateInput, KeywordEntry, ProductEntry } from "@/lib/types";
 import { PRODUCT_CATALOG } from "@/lib/products";
 
@@ -41,6 +41,38 @@ export default function InputPanel({ onGenerate, isLoading }: InputPanelProps) {
   const [instructions, setInstructions] = useState("");
   const [questions, setQuestions] = useState("");
   const pasteRef = useRef<HTMLTextAreaElement>(null);
+
+  // ── Persist form state in localStorage ───────────
+  const STORAGE_KEY = "lely-input-v1";
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return;
+      const data = JSON.parse(saved);
+      if (data.topic) setTopic(data.topic);
+      if (data.keywords?.length) setKeywords(data.keywords);
+      if (data.selectedProductIds?.length) setSelectedProductIds(new Set(data.selectedProductIds));
+      if (data.instructions) setInstructions(data.instructions);
+      if (data.questions) setQuestions(data.questions);
+    } catch {
+      // Corrupt storage — ignore and start fresh
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        topic,
+        keywords,
+        selectedProductIds: [...selectedProductIds],
+        instructions,
+        questions,
+      }));
+    } catch {
+      // Storage full or unavailable — ignore
+    }
+  }, [topic, keywords, selectedProductIds, instructions, questions]);
 
   // ── Keywords ──────────────────────────────────────
   function handlePaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
