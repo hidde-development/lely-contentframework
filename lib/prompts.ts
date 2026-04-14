@@ -341,7 +341,26 @@ Respond ONLY with valid JSON, no markdown.
 }
 
 severity: "high" (blocks quality or funnel integrity), "medium" (reduces effectiveness), "low" (minor improvement)
-elementId: the id of the most relevant text element — include it whenever you can identify the specific element. Omit only for page-level issues with no single element to point to.
+elementId: YOU MUST include an elementId on every action wherever possible. Most criteria can be tied to a specific element — use the examples below as a guide. Only omit elementId for issues that are genuinely structural with no single element to point to (e.g. a missing block type, wrong block order).
+
+elementId examples by criterion:
+- S1 (keyword in H1): the h1 element id
+- S2 (keyword in intro): the first p element id
+- S3 (secondary keywords): the h2 or h3 where the keyword is missing or should appear
+- S4 (heading hierarchy): the first heading that breaks the hierarchy
+- G1 (question H2s): the h2 element that is NOT phrased as a question
+- G2 (direct answer): the p element immediately after the question H2 that fails to open with a direct answer
+- G3 (takeaways): the specific li element that is missing a metric or is too long
+- G4 (full product names): the element containing the abbreviated product name
+- G6 (bold key terms): the p element where the key term appears unbolded for the first time
+- G9 (inline attribution): the p element containing the unattributed statistic
+- G10 (table source row): the table element missing a Source: row
+- B1 (sentence case): the specific heading element using title case
+- B2 (em dash): the specific element containing the em dash
+- B3 (British English): the element containing the non-British spelling
+- B4 (hollow marketing): the element containing the unsupported claim
+- B5 (tone): the element with non-farmer-centric framing
+
 If all criteria in a category are met, return an empty actions array for that category and a score of 100.`;
 
 export function parseJSON<T>(text: string, label: string): T {

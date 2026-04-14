@@ -39,20 +39,62 @@ ${productContext}
 Additional instructions: ${input.instructions || "None"}
 Questions to answer: ${input.questions || "None"}`;
 
+  // ── Criterion → element fallback mapping ──────────────────────────────────
+  // When the critic omits elementId, infer the most relevant elements from the
+  // text array based on the criterion code. Keeps fix prompts focused.
+  function inferElementIds(criterion: string, allText: GeneratedContent["text"]): string[] {
+    const byType = (types: string[]) => allText.filter(el => types.includes(el.type)).map(el => el.id);
+    switch (criterion) {
+      case "S1": return byType(["h1"]);
+      case "S2": return allText.filter(el => el.type === "p").slice(0, 2).map(el => el.id);
+      case "S3":
+      case "S4":
+      case "G1":
+      case "B1": return byType(["h1", "h2", "h3"]);
+      case "G2": return byType(["h2", "p"]).slice(0, 12);
+      case "G3": return byType(["li"]);
+      case "G4":
+      case "G6": return byType(["p", "h2", "h3"]).slice(0, 15);
+      case "G5":
+      case "G10": return byType(["table"]);
+      case "G7": return byType(["source"]);
+      case "G8": return byType(["faq_q", "faq_a"]);
+      case "G9": return byType(["p"]).slice(0, 15);
+      case "B2": return allText.filter(el => /—|–/.test(el.content)).map(el => el.id);
+      case "B3":
+      case "B4":
+      case "B5": return byType(["p"]).slice(0, 10);
+      default:   return [];
+    }
+  }
+
   // ── Surgical fix: only touch elements flagged by the critic ────────────────
-  // Actions with an elementId can be fixed automatically.
-  // Actions without an elementId are structural/page-level — left for human review.
-  const elementActions = quality.actions.filter((a) => a.elementId);
+  // Actions with an elementId are fixed directly.
+  // Actions without an elementId fall back to the criterion mapping above.
+  // Actions that cannot be mapped to any element are left for human review.
+  const elementActions = quality.actions.filter((a) => {
+    if (a.elementId) return true;
+    return inferElementIds(a.criterion, text).length > 0;
+  });
 
   let newText = text;
 
   if (elementActions.length > 0) {
-    const idsToFix = [...new Set(elementActions.map((a) => a.elementId!))];
-    const elementsToFix = text.filter((el) => idsToFix.includes(el.id));
+    // Resolve element IDs: use explicit elementId, or fall back to criterion mapping
+    const idsToFix = new Set<string>();
+    const actionWithIds = elementActions.map((a) => {
+      const ids = a.elementId
+        ? [a.elementId]
+        : inferElementIds(a.criterion, text);
+      ids.forEach((id) => idsToFix.add(id));
+      return { ...a, resolvedIds: ids };
+    });
 
-    const fixInstructions = elementActions
+    const elementsToFix = text.filter((el) => idsToFix.has(el.id));
+
+    const fixInstructions = actionWithIds
       .map((a) =>
-        `\n[Element ID: ${a.elementId}] Criterion ${a.criterion} (${a.severity})\nIssue: ${a.issue}\nFix: ${a.fix}`
+        `\n[Elements: ${a.resolvedIds.join(", ")}] Criterion ${a.criterion} (${a.severity})\nIssue: ${a.issue}\nFix: ${a.fix}`
       )
       .join("\n");
 
