@@ -265,7 +265,6 @@ function CmsLabel({ el, activeId, onHover }: { el: TextElement; activeId: string
     <div onMouseEnter={() => onHover(el.id)} onMouseLeave={() => onHover(null)}
       className={`inline-flex items-center gap-1.5 mb-2 cursor-default transition-all rounded px-1 -mx-1 ${hoverCls(el.id, activeId)}`}>
       <span className="text-xs font-bold tracking-widest text-gray-400 uppercase">{el.content}</span>
-      <span className="text-xs bg-amber-100 text-amber-700 border border-amber-200 rounded px-1.5 py-0.5 font-medium">CMS label</span>
     </div>
   );
 }
