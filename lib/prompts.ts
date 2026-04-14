@@ -144,7 +144,8 @@ Purpose: the H1 signals to Google which audience and problem this page serves. I
 Purpose: recap the article in three bullet points so that LLMs know exactly what the page covers. Displayed in a box so the reader immediately understands these are highlights, not the start of the article body.
 - type: "label" — "KEY TAKEAWAYS"
 - type: "h2" — "Key takeaways" or more specific variant
-- type: "li" × exactly 3 — three short, punchy, standalone facts. Maximum 1 sentence each. Every li MUST contain a specific number, percentage, or verifiable metric. Each li must be independently citable by an AI without surrounding context. No subordinate clauses, no lists within a list, no explanations. If it needs more than one sentence, it is too long.
+- type: "li" × exactly 3 — three short, punchy, standalone facts about the topic. Maximum 1 sentence each. Every li MUST contain a specific number, percentage, or verifiable metric. Each li must be independently citable by an AI without surrounding context. No subordinate clauses, no lists within a list, no explanations. If it needs more than one sentence, it is too long.
+  - **NO product mentions**: do not name any Lely product in the takeaways. These bullets summarise the article's subject matter (the farmer's challenge, the agronomic or operational reality), not the Lely offering. Save product introductions for the body sections.
 
 **BLOCK 3 — INTRODUCTION**
 Purpose: make the problem the farmer is facing immediately recognisable and relatable. The farmer must feel understood before they will read on.
