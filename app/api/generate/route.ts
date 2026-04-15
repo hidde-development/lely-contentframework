@@ -51,6 +51,7 @@ Generate ONLY these blocks in order:
 - Block 1: HERO (label + h1 — frame the farmer's problem as the title, not a product or Lely title)
 - Block 2: KEY TAKEAWAYS (label "KEY TAKEAWAYS" + h2 + exactly 3 li items — each a single punchy sentence with a specific number or metric, nothing longer)
 - Block 3: INTRODUCTION (label + h2 as a question the farmer is asking right now + p max 4 sentences, acknowledge situation → explain page → promise value)
+- Block 3B: KEYWORD DEFINITION (h2 "What defines modern [primary keyword]?" using the exact primary keyword + 1–2 p: first sentence = precise standalone definition, second sentence = why it matters to dairy farmers today. No Lely products.)
 - Block 4: BODY TEXT SECTION 1 — PROBLEM DEFINITION (label + h2 as question about definition/cause + 1–2 p encyclopedic answer + table REQUIRED comparing causes/risk factors/stages + cta)
 - Block 5: BODY TEXT SECTION 2 — FARMER IMPACT (label + h2 as question about cost or operational impact + 1–2 p opening with a specific financial figure + optional table of cost scenarios + cta)
 - Block 6: BODY TEXT SECTION 3 — PREVENTION AND LELY APPROACH (label + h2 as question about prevention/management + for EACH featured product: h3 with product name + benefit phrase linking to this topic, then p of exactly 4 sentences: 1. what the product is and its role in this topic, 2. how it addresses the specific problem, 3. specific data point or measurable outcome, 4. concrete farmer benefit in cost/time/welfare + cta)

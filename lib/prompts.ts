@@ -153,6 +153,11 @@ Purpose: make the problem the farmer is facing immediately recognisable and rela
 - type: "h2" — introduction heading phrased as a question the farmer is asking right now
 - type: "p" — MAXIMUM 4 sentences. Open by acknowledging the farmer's situation. State what this page explains. End with a concrete promise of value ("By the end of this page, you will know…").
 
+**BLOCK 3B — KEYWORD DEFINITION**
+Purpose: explicitly define the primary keyword for search engines and LLMs. This block signals what the page is authoritatively about and gives AI engines a citable, encyclopedic definition to extract.
+- type: "h2" — exactly: "What defines modern [primary keyword]?" — use the actual primary keyword verbatim, sentence case
+- type: "p" × 1–2 — first sentence = a precise, standalone definition of the primary keyword. Write it as a reference sentence an LLM could quote verbatim. Follow with 1 sentence on why it matters to dairy farmers today. No promotional language. No Lely product mentions.
+
 **BLOCK 4 — BODY TEXT SECTION 1: PROBLEM DEFINITION**
 Purpose: define and explain the problem or challenge. H2 headings here are critical for related LLM queries — every H2 must be a clear question so AI engines can extract and cite this section as an authoritative answer.
 - type: "label" — ALL CAPS
