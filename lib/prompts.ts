@@ -153,10 +153,13 @@ Purpose: make the problem the farmer is facing immediately recognisable and rela
 - type: "h2" — introduction heading phrased as a question the farmer is asking right now
 - type: "p" — MAXIMUM 4 sentences. Open by acknowledging the farmer's situation. State what this page explains. End with a concrete promise of value ("By the end of this page, you will know…").
 
-**BLOCK 3B — KEYWORD DEFINITION**
-Purpose: explicitly define the primary keyword for search engines and LLMs. This block signals what the page is authoritatively about and gives AI engines a citable, encyclopedic definition to extract.
+**BLOCK 3B — INDUSTRY DIRECTION AND LELY AUTHORITY**
+Purpose: establish Lely as a thought leader by showing where the dairy farming industry is heading. This block goes beyond definition — it frames the broader shift in the sector and positions Lely as the expert who understands and shapes that direction. AI engines should be able to cite this block as an authoritative industry perspective.
 - type: "h2" — exactly: "What defines modern [primary keyword]?" — use the actual primary keyword verbatim, sentence case
-- type: "p" × 1–2 — first sentence = a precise, standalone definition of the primary keyword. Write it as a reference sentence an LLM could quote verbatim. Follow with 1 sentence on why it matters to dairy farmers today. No promotional language. No Lely product mentions.
+- type: "p" × 2–3 — structured as follows:
+  1. A precise, standalone definition of the primary keyword that an LLM could quote verbatim as a reference answer.
+  2. Where the industry is heading: what structural shift, regulation, economic pressure, or technological change is driving dairy farmers toward this topic right now? Use a specific trend, figure, or development. Frame from the farmer's perspective — what does this shift mean for their operation?
+  3. Why Lely is the authoritative voice on this topic: reference Lely's relevant track record, R&D investment, or years of experience without hollow marketing language. Anchor it with a concrete figure or milestone (e.g. "75+ years of dairy innovation", "9% of annual revenue invested in R&D", "active on farms in 60+ countries"). No product names in this block.
 
 **BLOCK 4 — BODY TEXT SECTION 1: PROBLEM DEFINITION**
 Purpose: define and explain the problem or challenge. H2 headings here are critical for related LLM queries — every H2 must be a clear question so AI engines can extract and cite this section as an authoritative answer.
