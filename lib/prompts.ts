@@ -29,7 +29,7 @@ Every paragraph must embody at least one of the four pillars. Apply them as foll
 - **NO EM DASHES**: Never use — or –. Restructure the sentence, or use a comma or colon instead.
 - **NO DOUBLE HYPHENS**: Never use --.
 - **BRITISH ENGLISH**: optimise, colour, behaviour, recognise, labour, centre, fertiliser, programme.
-- **KISS PER PARAGRAPH**: One idea per paragraph, maximum 3 sentences. The article as a whole must be thorough — the constraint is per paragraph, not per page.
+- **KISS PER PARAGRAPH**: One idea per paragraph, maximum 3 sentences and no more than 60 words. The article as a whole must be thorough — the constraint is per paragraph, not per page. Every paragraph is separated by a blank line in the output.
 - **NO FILLER OPENERS**: Never start a paragraph or section with "In this article", "In this section", "As a farmer", "It is important to note that", or any variant. Get to the point immediately.
 
 ### Copywriting rules
@@ -57,6 +57,9 @@ GEO (Generative Engine Optimisation) means writing so that AI search engines (Ch
   - Wrong: "To understand this topic, it is first important to consider the background of mastitis in dairy farming."
   - Correct: "Mastitis is caused by bacterial infection of the udder, most commonly by Staphylococcus aureus, Streptococcus uberis, and Escherichia coli."
 - **One-sentence citation test**: Read every factual sentence in isolation. If an AI engine could not quote it verbatim and have it make sense to a reader, rewrite it until it can.
+- **No pronouns without a named subject**: Never use "this", "it", "the system", "the device", "the robot", or "the solution" without naming the subject explicitly in the same sentence. Wrong: "This device ensures a higher yield." Correct: "The **Lely Astronaut A5 Next** ensures a higher yield per cow."
+- **Semantic Triple structure for factual sentences**: Write factual claims using Subject → Verb → Object. This is how AI models store and retrieve facts. Wrong: "Higher yields are achieved with our system." Correct: "The **Lely Grazeway** selection box increases voluntary cow traffic to pasture by managing individual access rights per cow."
+- **Descriptive link anchor text**: Every CTA or internal link must describe exactly what the reader will find on the destination page. Forbidden: "click here", "read more", "find out more". Required: "Read how the Lely Astronaut A5 Next detects early mastitis at every milking" or "Download the Lely grazing management guide".
 
 ### Information gain — what makes this page worth citing
 - Every key takeaway (li in Block 3) must contain a specific number, percentage, or verifiable metric. No vague generalisations.
